@@ -13,7 +13,7 @@ emp_outside_of_hours = 2
 # special_hours = {}
 
 class Employee():
-    def __init__(self, name, availability, fixed_hours=False):
+   def __init__(self, name, availability, fixed_hours=False):
         self.name = name
         self.fixed_hours = fixed_hours
         self.availability = availability
@@ -101,7 +101,26 @@ jamie = Employee("jamie", [
     [0000, 2300],
 ])
 
-employees = [jamie, jasmine, therese, bandish]
+aaron = Employee("aaron", [
+    [0000, 2300],
+    [0000, 2300],
+    [0000, 2300],
+    [0000, 2300],
+    [0000, 2300],
+    [0000, 2300],
+    [0000, 2300],
+])
+
+ben_o = Employee("ben o", [
+    None,
+    None,
+    None,
+    None,
+    None,
+    [0000, 2300],
+    [0000, 2300],
+])
+employees = [jamie, jasmine, therese, bandish, aaron, ben_o]
 randomized_employees = employees[:]
 
 for day_number, day in enumerate(days):
