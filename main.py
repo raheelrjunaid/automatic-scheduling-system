@@ -9,6 +9,7 @@ opening = 1000
 closing = 2100
 
 emp_outside_of_hours = 2
+
 # TODO holiday hours
 # special_hours = {}
 
@@ -120,6 +121,31 @@ ben_o = Employee("ben o", [
     [0000, 2300],
     [0000, 2300],
 ])
+
+def potential_slot(slots, employee_availability):
+    potential_slots = slots[:]
+    for slot in slots:
+        if slot[0] < employee_availability[0] or slot[1] > employee_availability[1]:
+            potential_slots.remove(slot)
+    return potential_slots
+
+def book_employee(employee, slots, day):
+    if slots == []:
+        employee.scheduled.append(None)
+    else:
+        if type(slots[0]) is list:
+            slot = slots[randint(0, len(slots) - 1)]
+        else:
+            slot = slots
+
+        if slot[0] == opening - 70 and len(day.emp_opening) < emp_outside_of_hours:
+            day.emp_opening.append(employee)
+        elif slot[1] == closing + 30 and len(day.emp_closing) < emp_outside_of_hours:
+            day.emp_closing.append(employee)
+
+        employee.scheduled.append(slot)
+        day.emp_working.append(employee)
+
 employees = [jamie, jasmine, therese, bandish, aaron, ben_o]
 randomized_employees = employees[:]
 
@@ -150,39 +176,16 @@ for day_number, day in enumerate(days):
         else:
             employee_availability = employee.availability[day_number]
             if employee_availability != None:
-                potential_opening_slots = opening_slots[:]
-                for slot in opening_slots:
-                    if slot[0] < employee_availability[0] or slot[1] > employee_availability[1]:
-                        potential_opening_slots.remove(slot)
+                potential_opening = potential_slot(opening_slots, employee_availability)
+                potential_closing = potential_slot(closing_slots, employee_availability)
+                potential_regular = potential_slot(regular_slots, employee_availability)
 
-                potential_slots = regular_slots[:]
-                for slot in regular_slots:
-                    if slot[0] < employee_availability[0] or slot[1] > employee_availability[1]:
-                        potential_slots.remove(slot)
-
-                potential_closing_slots = closing_slots[:]
-                for slot in closing_slots:
-                    if slot[0] < employee_availability[0] or slot[1] > employee_availability[1]:
-                        potential_closing_slots.remove(slot)
-                
-                if len(day.emp_opening) < 2 and len(potential_opening_slots) != 0:
-                    employee.scheduled.append(potential_opening_slots[randint(0, len(potential_opening_slots) - 1)])
-                    day.emp_opening.append(employee)
-                    day.emp_working.append(employee)
-
-                elif len(day.emp_closing) < 2 and len(potential_closing_slots) != 0:
-                    employee.scheduled.append(potential_closing_slots[randint(0, len(potential_closing_slots) - 1)])
-                    day.emp_closing.append(employee)
-                    day.emp_working.append(employee)
-
-                elif len(potential_slots) > 0:
-                    employee.scheduled.append(potential_slots[randint(0, len(potential_slots) - 1)])
-                    day.emp_working.append(employee)
-                
+                if not all([potential_opening, potential_closing, potential_regular]):
+                    book_employee(employee, employee_availability, day)
                 else:
-                    print(day.name, employee.name, employee.availability[day_number])
-                    employee.scheduled.append(employee.availability[day_number])
-                    day.emp_working.append(employee)
+                    book_employee(employee, potential_opening, day)
+                    book_employee(employee, potential_closing, day)
+                    book_employee(employee, potential_regular, day)
 
             else:
                 employee.scheduled.append(None)
