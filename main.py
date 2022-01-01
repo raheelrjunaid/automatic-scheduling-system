@@ -8,6 +8,7 @@ table.add_column("Name")
 opening = 1000
 closing = 2100
 
+emp_outside_of_hours = 2
 # TODO holiday hours
 # special_hours = {}
 
