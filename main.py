@@ -89,6 +89,17 @@ for day_number, day in enumerate(days):
             employee.scheduled[day_number] = None
             employee.call_back_days.append(day)
 
+schedule_table.add_row("Hours:", 
+    f"{days[0].opening} - {days[0].closing}",
+    f"{days[1].opening} - {days[1].closing}",
+    f"{days[2].opening} - {days[2].closing}",
+    f"{days[3].opening} - {days[3].closing}",
+    f"{days[4].opening} - {days[4].closing}",
+    f"{days[5].opening} - {days[5].closing}",
+    f"{days[6].opening} - {days[6].closing}",
+    style="blue"
+)
+
 employees.sort(key=lambda employee : employee.name)
 for employee in employees:
     schedule = []
