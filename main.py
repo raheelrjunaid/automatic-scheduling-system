@@ -65,7 +65,7 @@ for day_number, day in enumerate(days):
         else: # Not available
             employee.scheduled.append(None)
 
-schedule_table.add_row("Hours:", *hours, style="blue") # Add hours to schedule table
+schedule_table.add_row("Hours", *hours, style="black on yellow") # Add hours to schedule table
 
 # Display employees in alphabetical order (by name)
 employees.sort(key=lambda employee : employee.name)

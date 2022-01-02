@@ -56,7 +56,7 @@ def display_time(hours, day, twelve_hour):
     else:
         opening = strftime("%-H:%M", gmtime(start*60*60))
         closing = strftime("%-H:%M", gmtime(end*60*60))
-
+    
     # Highlight opening or closing
     if start < day.opening:
         timing = f"[green bold]{opening}[/] - {closing}"
