@@ -1,6 +1,8 @@
 from random import shuffle, sample, randint
 from rich.table import Table
 from rich import print, box
+from employees import employees
+from days import days
 
 schedule_table = Table(title="Employee Schedule", box=box.MINIMAL_HEAVY_HEAD, show_header=True, show_lines=True)
 schedule_table.add_column("Name")
@@ -10,45 +12,11 @@ sick_table.add_column("Name")
 
 opening = 1000
 closing = 2100
-
 emp_outside_of_hours = 2
 max_emps_working = 5
 
 # TODO holiday hours
 # special_hours = {}
-
-class Employee():
-   def __init__(self, name, availability, fixed_hours=False):
-        self.name = name
-        self.fixed_hours = fixed_hours
-        self.availability = availability
-        self.scheduled = []
-        self.call_back_days = []
-
-class Day():
-    def __init__(self, name):
-        self.name = name
-        self.emp_working = []
-        self.emp_closing = []
-        self.emp_opening = []
-
-sunday = Day("sunday")
-monday = Day("monday")
-tuesday = Day("tuesday")
-wednesday = Day("wednesday")
-thursday = Day("thursday")
-friday = Day("friday")
-saturday = Day("saturday")
-
-days = [
-    sunday,
-    monday,
-    tuesday,
-    wednesday,
-    thursday,
-    friday,
-    saturday
-]
 
 available_slots = [
     [opening - 70, opening + 500],
@@ -60,86 +28,6 @@ available_slots = [
     [closing - 500, closing + 30],
     [closing - 800, closing + 30]
 ]
-
-bandish = Employee("bandish", [
-    None,
-    [930, 1800],
-    [930, 1800],
-    [930, 1800],
-    [930, 1800],
-    [930, 1800],
-    None
-], True)
-
-therese = Employee("therese", [
-    [1030, 1830],
-    [1200, 2030],
-    [1200, 2030],
-    [1200, 2030],
-    [1300, 2130],
-    [1300, 2130],
-    [930, 2200]
-])
-
-jasmine = Employee("jasmine", [
-    None,
-    [1330, 2130],
-    [1330, 2130],
-    [1330, 2130],
-    [1330, 2130],
-    [1330, 2130],
-    None,
-])
-
-jamie = Employee("jamie", [
-    [0000, 2300],
-    [0000, 2300],
-    [0000, 2300],
-    [0000, 2300],
-    [0000, 2300],
-    [0000, 2300],
-    [0000, 2300],
-])
-
-aaron = Employee("aaron", [
-    [0000, 2300],
-    [0000, 2300],
-    [0000, 2300],
-    [0000, 2300],
-    [0000, 2300],
-    [0000, 2300],
-    [0000, 2300],
-])
-
-ben_o = Employee("ben o", [
-    None,
-    None,
-    None,
-    None,
-    None,
-    [0000, 2300],
-    [0000, 2300],
-])
-
-ben_a = Employee("ben a", [
-    [1100, 1800],
-    None,
-    [1000, 1800],
-    [1200, 2000],
-    [1200, 2000],
-    None,
-    [1000, 1800],
-])
-
-monica = Employee("monica", [
-    [0000, 2300],
-    None,
-    None,
-    [1630, 2100],
-    None,
-    [1630, 2100],
-    None
-])
 
 def potential_slot(slots, employee_availability, day):
     potential_slots = slots[:]
@@ -174,7 +62,6 @@ def book_employee(employee, slots, day):
         employee.scheduled.append(slot)
         day.emp_working.append(employee)
 
-employees = [monica, ben_a, jamie, jasmine, therese, bandish, aaron, ben_o]
 fixed_employees = [employee for employee in employees if employee.fixed_hours]
 reg_employees = [employee for employee in employees if not employee.fixed_hours]
 
@@ -214,7 +101,7 @@ for employee in employees:
 
     for day in employee.scheduled:
         if day == None:
-            schedule.append("[grey50]N/A[/]")
+            schedule.append("[grey50]N/A")
         else:
             start = day[0]
             end = day[1]
@@ -231,7 +118,7 @@ for employee in employees:
             if day[0] <= opening - 30:
                 schedule.append(f"[green bold]{start}[/] - {end}")
             elif day[1] >= closing + 30:
-                schedule.append(f"{start} - [red bold]{end}[/]")
+                schedule.append(f"{start} - [red bold]{end}")
             else:
                 schedule.append(f"{start} - {end}")
 
@@ -246,7 +133,8 @@ for employee in employees:
     )
 
     if employee.call_back_days != []:
-        call_backs = [":white_check_mark:" if day in employee.call_back_days else None for day in days]
+        call_backs = [":white_check_mark:" if day in \
+            employee.call_back_days else "[grey50]N/A" for day in days]
         sick_table.add_row(employee.name.capitalize(), 
             call_backs[0],
             call_backs[1],
@@ -261,5 +149,5 @@ print("\n[bold green]Green[/] indicates opening shift.")
 print("[bold red]Red[/] indicates closing shift.\n")
 print(schedule_table)
 
-print("\n:white_check_mark: indicates availability.")
+print(":white_check_mark: indicates availability.\n")
 print(sick_table)
