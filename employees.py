@@ -8,6 +8,7 @@ class Employee():
 
 from days import days
 
+# Variable Fixed Hours
 bandish = Employee("bandish", [
     None,
     days[1].slots[0 if days[1].duration < 8 else 4],
@@ -16,6 +17,16 @@ bandish = Employee("bandish", [
     days[4].slots[0 if days[4].duration < 8 else 4],
     days[5].slots[0 if days[5].duration < 8 else 4],
     None
+], fixed_hours=True)
+
+jasmine = Employee("jasmine", [
+    None,
+    days[1].slots[3 if days[1].duration < 8 else 7],
+    days[2].slots[3 if days[2].duration < 8 else 7],
+    days[3].slots[3 if days[3].duration < 8 else 7],
+    days[4].slots[3 if days[4].duration < 8 else 7],
+    days[5].slots[3 if days[5].duration < 8 else 7],
+    None,
 ], fixed_hours=True)
 
 therese = Employee("therese", [
@@ -27,16 +38,6 @@ therese = Employee("therese", [
     [13, 21.50],
     [9.30, 22]
 ])
-
-jasmine = Employee("jasmine", [
-    None,
-    days[1].slots[3 if days[1].duration < 8 else 7],
-    days[2].slots[3 if days[2].duration < 8 else 7],
-    days[3].slots[3 if days[3].duration < 8 else 7],
-    days[4].slots[3 if days[4].duration < 8 else 7],
-    days[5].slots[3 if days[5].duration < 8 else 7],
-    None,
-], fixed_hours=True)
 
 jamie = Employee("jamie", [
     [0, 23],
@@ -89,4 +90,3 @@ monica = Employee("monica", [
 ])
 
 employees = [monica, ben_a, jamie, jasmine, therese, bandish, aaron, ben_o]
-# employees = [therese]
