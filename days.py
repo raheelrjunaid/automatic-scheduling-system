@@ -7,27 +7,27 @@ class Day():
         self.opening = opening
         self.closing = closing
         self.slots = [
-            [opening - 70, opening + 500],
-            [opening, opening + 500],
-            [closing - 500, closing],
-            [closing - 500, closing + 30],
+            [opening - .5, opening + 5],
+            [opening, opening + 5],
+            [closing - 5, closing],
+            [closing - 5, closing + .5],
         ]
         self.duration = self.closing - self.opening
         
-        if self.duration >= 800:
+        if self.duration >= 8:
             self.slots.extend([
-                [opening - 70, opening + 800],
-                [opening, opening + 800],
-                [closing - 800, closing],
-                [closing - 800, closing + 30]
+                [opening - .5, opening + 8],
+                [opening, opening + 8],
+                [closing - 8, closing],
+                [closing - 8, closing + .5]
             ])
 
-sunday = Day("sunday", 1100, 1800)
-monday = Day("monday", 1100, 2000)
-tuesday = Day("tuesday", 1100, 2000)
-wednesday = Day("wednesday", 1100, 2000)
-thursday = Day("thursday", 1000, 2100)
-friday = Day("friday", 1000, 2100)
-saturday = Day("saturday", 1100, 1800)
+sunday = Day("sunday", 11, 18)
+monday = Day("monday", 11, 20)
+tuesday = Day("tuesday", 11, 20)
+wednesday = Day("wednesday", 11, 20)
+thursday = Day("thursday", 10, 21)
+friday = Day("friday", 10, 21)
+saturday = Day("saturday", 11, 18)
 
 days = [sunday, monday, tuesday, wednesday, thursday, friday, saturday]
