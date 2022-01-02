@@ -1,14 +1,18 @@
-from random import shuffle, sample
+from random import shuffle, sample, randint
 from rich.table import Table
 from rich import print, box
 
-table = Table(title="Employee Schedule", box=box.MINIMAL_HEAVY_HEAD, show_header=True, show_lines=True)
-table.add_column("Name")
+schedule_table = Table(title="Employee Schedule", box=box.MINIMAL_HEAVY_HEAD, show_header=True, show_lines=True)
+schedule_table.add_column("Name")
+
+sick_table = Table(title="Sick Replacement Calls", box=box.MINIMAL_HEAVY_HEAD, show_header=True, show_lines=True)
+sick_table.add_column("Name")
 
 opening = 1000
 closing = 2100
 
 emp_outside_of_hours = 2
+max_emps_working = 5
 
 # TODO holiday hours
 # special_hours = {}
@@ -19,6 +23,7 @@ class Employee():
         self.fixed_hours = fixed_hours
         self.availability = availability
         self.scheduled = []
+        self.call_back_days = []
 
 class Day():
     def __init__(self, name):
@@ -170,16 +175,19 @@ def book_employee(employee, slots, day):
         day.emp_working.append(employee)
 
 employees = [monica, ben_a, jamie, jasmine, therese, bandish, aaron, ben_o]
+fixed_employees = [employee for employee in employees if employee.fixed_hours]
+reg_employees = [employee for employee in employees if not employee.fixed_hours]
 
 for day_number, day in enumerate(days):
-    table.add_column(day.name.capitalize())
+    schedule_table.add_column(day.name.capitalize(), justify="center")
+    sick_table.add_column(day.name.capitalize(), justify="center")
 
-    for employee in [employee for employee in employees if employee.fixed_hours]:
+    for employee in fixed_employees:
         employee_hours = employee.availability[day_number]
         book_employee(employee, employee_hours, day)
 
-    shuffle(employees)
-    for employee in [employee for employee in employees if not employee.fixed_hours]:
+    shuffle(reg_employees)
+    for employee in reg_employees:
         employee_availability = employee.availability[day_number]
         if employee_availability != None:
             potential_slots = potential_slot(available_slots, employee_availability, day)
@@ -191,6 +199,14 @@ for day_number, day in enumerate(days):
 
         else:
             employee.scheduled.append(None)
+
+    while len([employee for employee in day.emp_working if not employee.fixed_hours]) > max_emps_working:
+        employee = day.emp_working[randint(0, len(reg_employees) - 1)] 
+
+        if not (employee in day.emp_opening or employee in day.emp_closing):
+            day.emp_working.remove(employee)
+            employee.scheduled[day_number] = None
+            employee.call_back_days.append(day)
 
 employees.sort(key=lambda employee : employee.name)
 for employee in employees:
@@ -219,7 +235,7 @@ for employee in employees:
             else:
                 schedule.append(f"{start} - {end}")
 
-    table.add_row(employee.name.capitalize(),
+    schedule_table.add_row(employee.name.capitalize(),
         schedule[0],
         schedule[1],
         schedule[2],
@@ -229,6 +245,21 @@ for employee in employees:
         schedule[6],
     )
 
+    if employee.call_back_days != []:
+        call_backs = [":white_check_mark:" if day in employee.call_back_days else None for day in days]
+        sick_table.add_row(employee.name.capitalize(), 
+            call_backs[0],
+            call_backs[1],
+            call_backs[2],
+            call_backs[3],
+            call_backs[4],
+            call_backs[5],
+            call_backs[6],
+        )
+
 print("\n[bold green]Green[/] indicates opening shift.")
 print("[bold red]Red[/] indicates closing shift.\n")
-print(table)
+print(schedule_table)
+
+print("\n:white_check_mark: indicates availability.")
+print(sick_table)
