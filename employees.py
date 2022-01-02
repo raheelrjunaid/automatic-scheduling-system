@@ -6,13 +6,16 @@ class Employee():
         self.scheduled = []
         self.call_back_days = []
 
+from days import days
+
+bandish_chosen_slot = 4
 bandish = Employee("bandish", [
     None,
-    [930, 1800],
-    [930, 1800],
-    [930, 1800],
-    [930, 1800],
-    [930, 1800],
+    days[1].slots[0 if days[1].duration < 800 else 4],
+    days[2].slots[0 if days[2].duration < 800 else 4],
+    days[3].slots[0 if days[3].duration < 800 else 4],
+    days[4].slots[0 if days[4].duration < 800 else 4],
+    days[5].slots[0 if days[5].duration < 800 else 4],
     None
 ], fixed_hours=True)
 
