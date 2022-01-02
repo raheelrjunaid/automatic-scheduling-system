@@ -1,19 +1,19 @@
 from random import shuffle, sample, randint
 from rich.table import Table
+from rich.prompt import Confirm
 from rich import print, box
+import time
 from employees import employees
 from days import days
 
-# Create tables
+twelve_hour = Confirm.ask("12 Hour Time?")
+
+# Create table
 schedule_table = Table(title="Employee Schedule", box=box.MINIMAL_HEAVY_HEAD, show_header=True, show_lines=True)
 schedule_table.add_column("Name")
 
-sick_table = Table(title="Sick Replacement Calls", box=box.MINIMAL_HEAVY_HEAD, show_header=True, show_lines=True)
-sick_table.add_column("Name")
-
 # Initial Parameters
 emp_outside_of_hours = 2
-max_emps_working = 5
 
 # TODO holiday hours
 # special_hours = {}
@@ -23,9 +23,9 @@ def potential_slot(employee_availability, day):
     for slot in day.slots:
         if slot[0] < employee_availability[0] or slot[1] > employee_availability[1]:
             slots.remove(slot)
-        elif slot[0] <= day.opening - 70 and len(day.emp_opening) >= emp_outside_of_hours:
+        elif slot[0] <= day.opening - .5 and len(day.emp_opening) >= emp_outside_of_hours:
             slots.remove(slot)
-        elif slot[1] >= day.closing + 30 and len(day.emp_closing) >= emp_outside_of_hours:
+        elif slot[1] >= day.closing + .5 and len(day.emp_closing) >= emp_outside_of_hours:
             slots.remove(slot)
     return slots
 
@@ -33,19 +33,21 @@ def book_employee(employee, slots, day):
     if slots == [] or slots is None:
         employee.scheduled.append(None)
     else:
+        opening_time = day.opening - .5
+        closing_time = day.closing + .5
         if type(slots[0]) is list:
-            if day.opening - 70 in map(lambda x: x[0], slots):
-                slots = [slot for slot in slots if slot[0] <= day.opening - 70]
-            elif day.closing + 30 in map(lambda x: x[1], slots):
-                slots = [slot for slot in slots if slot[1] >= day.closing + 30]
+            if opening_time in map(lambda x: x[0], slots):
+                slots = [slot for slot in slots if slot[0] <= opening_time]
+            elif closing_time in map(lambda x: x[1], slots):
+                slots = [slot for slot in slots if slot[1] >= closing_time]
             slot = sample(slots, 1)[0]
 
         else:
             slot = slots
 
-        if slot[0] <= day.opening - 70:
+        if slot[0] <= opening_time:
             day.emp_opening.append(employee)
-        elif slot[1] >= day.closing + 30:
+        elif slot[1] >= closing_time:
             day.emp_closing.append(employee)
 
         employee.scheduled.append(slot)
@@ -53,10 +55,29 @@ def book_employee(employee, slots, day):
 
 fixed_employees = [employee for employee in employees if employee.fixed_hours]
 reg_employees = [employee for employee in employees if not employee.fixed_hours]
+hours = []
+
+def display_time(hours, day):
+    start = hours[0]
+    end = hours[1]
+    if twelve_hour:
+        opening = time.strftime("%-I:%M%p", time.gmtime(start*60*60))
+        closing = time.strftime("%-I:%M%p", time.gmtime(end*60*60))
+    else:
+        opening = time.strftime("%-H:%M", time.gmtime(start*60*60))
+        closing = time.strftime("%-H:%M", time.gmtime(end*60*60))
+
+    if start < day.opening:
+        timing = f"[green bold]{opening}[/] - {closing}"
+    elif end > day.closing:
+        timing = f"{opening} - [red bold]{closing}"
+    else:
+        timing = f"{opening} - {closing}"
+
+    return timing
 
 for day_number, day in enumerate(days):
     schedule_table.add_column(day.name.capitalize(), justify="center")
-    sick_table.add_column(day.name.capitalize(), justify="center")
 
     for employee in fixed_employees:
         employee_hours = employee.availability[day_number]
@@ -69,10 +90,16 @@ for day_number, day in enumerate(days):
             potential_slots = potential_slot(employee_availability, day)
 
             if potential_slots == []:
-                if employee_availability[0] < day.opening - 70:
-                    employee_availability[0] = day.opening - 70
-                elif employee_availability[1] > day.closing + 30:
-                    employee_availability[1] = day.closing + 30
+                if employee_availability[0] < day.opening - .5:
+                    if len(day.emp_opening) >= emp_outside_of_hours:
+                        employee_availability[0] = day.opening
+                    else:
+                        employee_availability[0] = day.opening - .5
+                elif employee_availability[1] > day.closing + .5:
+                    if len(day.emp_closing) >= emp_outside_of_hours:
+                        employee_availability[1] = day.closing
+                    else:
+                        employee_availability[1] = day.closing + .5
 
                 book_employee(employee, employee_availability, day)
             else:
@@ -81,22 +108,10 @@ for day_number, day in enumerate(days):
         else:
             employee.scheduled.append(None)
 
-    while len([employee for employee in day.emp_working if not employee.fixed_hours]) > max_emps_working:
-        employee = day.emp_working[randint(0, len(reg_employees) - 1)] 
-
-        if not (employee in day.emp_opening or employee in day.emp_closing):
-            day.emp_working.remove(employee)
-            employee.scheduled[day_number] = None
-            employee.call_back_days.append(day)
+    hours.append(display_time([day.opening, day.closing], day))
 
 schedule_table.add_row("Hours:", 
-    f"{days[0].opening} - {days[0].closing}",
-    f"{days[1].opening} - {days[1].closing}",
-    f"{days[2].opening} - {days[2].closing}",
-    f"{days[3].opening} - {days[3].closing}",
-    f"{days[4].opening} - {days[4].closing}",
-    f"{days[5].opening} - {days[5].closing}",
-    f"{days[6].opening} - {days[6].closing}",
+    *hours,
     style="blue"
 )
 
@@ -104,55 +119,17 @@ employees.sort(key=lambda employee : employee.name)
 for employee in employees:
     schedule = []
 
-    for day_number, day in enumerate(employee.scheduled):
-        if day == None:
+    for day_number, day in enumerate(days):
+        if employee.scheduled[day_number] == None:
             schedule.append("[grey50]N/A")
         else:
-            start = day[0]
-            end = day[1]
-
-            if start < 1000:
-                start = f"{str(start)[0:1]}:{str(start)[1:]}"
-            else:
-                start = f"{str(start)[0:2]}:{str(start)[2:]}"
-            if end < 1000:
-                end = f"{str(end)[0:1]}:{str(end)[1:]}"
-            else:
-                end = f"{str(end)[0:2]}:{str(end)[2:]}"
-
-            if day[0] <= days[day_number].opening - 30:
-                schedule.append(f"[green bold]{start}[/] - {end}")
-            elif day[1] >= days[day_number].closing + 30:
-                schedule.append(f"{start} - [red bold]{end}")
-            else:
-                schedule.append(f"{start} - {end}")
+            schedule.append(display_time([employee.scheduled[day_number][0], \
+            employee.scheduled[day_number][1]], day))
 
     schedule_table.add_row(employee.name.capitalize(),
-        schedule[0],
-        schedule[1],
-        schedule[2],
-        schedule[3],
-        schedule[4],
-        schedule[5],
-        schedule[6],
+        *schedule
     )
-
-    if employee.call_back_days != []:
-        call_backs = [":white_check_mark:" if day in \
-            employee.call_back_days else "[grey50]N/A" for day in days]
-        sick_table.add_row(employee.name.capitalize(), 
-            call_backs[0],
-            call_backs[1],
-            call_backs[2],
-            call_backs[3],
-            call_backs[4],
-            call_backs[5],
-            call_backs[6],
-        )
 
 print("\n[bold green]Green[/] indicates opening shift.")
 print("[bold red]Red[/] indicates closing shift.\n")
 print(schedule_table)
-
-print(":white_check_mark: indicates availability.\n")
-print(sick_table)
