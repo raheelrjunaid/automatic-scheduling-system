@@ -1,8 +1,8 @@
 from random import shuffle, sample
 from rich.table import Table
-from rich import print
+from rich import print, box
 
-table = Table(show_header=True, show_lines=True)
+table = Table(title="Employee Schedule", box=box.MINIMAL_HEAVY_HEAD, show_header=True, show_lines=True)
 table.add_column("Name")
 
 opening = 1000
@@ -198,7 +198,7 @@ for employee in employees:
 
     for day in employee.scheduled:
         if day == None:
-            schedule.append("N/A")
+            schedule.append("[grey50]N/A[/]")
         else:
             start = day[0]
             end = day[1]
@@ -213,9 +213,9 @@ for employee in employees:
                 end = f"{str(end)[0:2]}:{str(end)[2:]}"
 
             if day[0] <= opening - 30:
-                schedule.append(f"[green bold]{start}[/green bold] - {end}")
+                schedule.append(f"[green bold]{start}[/] - {end}")
             elif day[1] >= closing + 30:
-                schedule.append(f"{start} - [red bold]{end}[/red bold]")
+                schedule.append(f"{start} - [red bold]{end}[/]")
             else:
                 schedule.append(f"{start} - {end}")
 
@@ -229,6 +229,6 @@ for employee in employees:
         schedule[6],
     )
 
-print("\n[bold green]Green[/bold green] indicates opening shift.")
-print("[bold red]Red[/bold red] indicates closing shift.\n")
+print("\n[bold green]Green[/] indicates opening shift.")
+print("[bold red]Red[/] indicates closing shift.\n")
 print(table)
