@@ -31,13 +31,13 @@ therese = Employee("therese", [
 
 jasmine = Employee("jasmine", [
     None,
-    [1330, 2130],
-    [1330, 2130],
-    [1330, 2130],
-    [1330, 2130],
-    [1330, 2130],
+    days[1].slots[3 if days[1].duration < 800 else 7],
+    days[2].slots[3 if days[2].duration < 800 else 7],
+    days[3].slots[3 if days[3].duration < 800 else 7],
+    days[4].slots[3 if days[4].duration < 800 else 7],
+    days[5].slots[3 if days[5].duration < 800 else 7],
     None,
-])
+], fixed_hours=True)
 
 jamie = Employee("jamie", [
     [0, 2300],
