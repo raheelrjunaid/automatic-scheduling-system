@@ -83,9 +83,9 @@ monica = Employee("monica", [
     [0, 23],
     None,
     None,
-    [1630, 21],
+    [16.5, 21],
     None,
-    [1630, 21],
+    [16.5, 21],
     None
 ])
 
