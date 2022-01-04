@@ -4,7 +4,6 @@ class Employee:
         self.fixed_hours = fixed_hours
         self.availability = availability
         self.scheduled = []
-        self.call_back_days = []
 
 from days import days
 
