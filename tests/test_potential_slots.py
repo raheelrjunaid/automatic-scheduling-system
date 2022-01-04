@@ -40,7 +40,7 @@ class TestPotentialSlots(unittest.TestCase):
         self.assertEqual(12, slot.start)
         self.assertEqual(21, slot.end)
 
-    def test_employee_opening_closing(self):
+    def test_employee_closing(self):
         """
         Test if employee is booked if they aren't needed for opening or closing
         """
@@ -54,6 +54,3 @@ class TestPotentialSlots(unittest.TestCase):
         book_employee(self.emp_3, slots_3, self.day_1)
 
         self.assertNotIn(self.emp_3, self.day_1.emp_closing)
-
-if __name__ == '__main__':
-    unittest.main()

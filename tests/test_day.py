@@ -3,6 +3,7 @@ import unittest
 from days import Day
 
 class TestDays(unittest.TestCase):
+
     def setUp(self):
         self.day_1 = Day(11, 18)
         self.day_2 = Day(8, 21)
@@ -21,6 +22,3 @@ class TestDays(unittest.TestCase):
         self.assertEqual(18.5, self.day_1.slots[3].end)
         with self.assertRaises(IndexError):
             self.day_1.slots[7]
-
-if __name__ == '__main__':
-    unittest.main()
