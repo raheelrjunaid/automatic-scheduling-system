@@ -44,30 +44,30 @@ def potential_slot(emp_availability, day, emp_outside_hours):
 def book_employee(employee, slots, day):
     if slots is None: # Employee isn't available
         employee.scheduled.append(None)
+        return
+    # If slots is a list, employee doesn't have fixed hours
+    if type(slots) is list:
+        # Prioritize opening and closing shifts where needed
+        if any(list(map(lambda slot: slot.opening_slot, slots))):
+            slots = [slot for slot in slots if slot.opening_slot]
+        if any(list(map(lambda slot: slot.closing_slot, slots))):
+            slots = [slot for slot in slots if slot.closing_slot]
+
+        # Choose random shift
+        slot = sample(slots, 1)[0]
+    # Employee has fixed hours
     else:
-        # If slots is a list, employee doesn't have fixed hours
-        if type(slots) is list:
-            # Prioritize opening and closing shifts where needed
-            if any(list(map(lambda slot: slot.opening_slot, slots))):
-                slots = [slot for slot in slots if slot.opening_slot]
-            if any(list(map(lambda slot: slot.closing_slot, slots))):
-                slots = [slot for slot in slots if slot.closing_slot]
+        slot = slots
 
-            # Choose random shift
-            slot = sample(slots, 1)[0]
+    # Mark them as an opening/closing employee
+    if slot.opening_slot:
+        day.emp_opening.append(employee)
+    if slot.closing_slot:
+        day.emp_closing.append(employee)
 
-        else:
-            slot = slots
-
-        # Mark them as an opening/closing employee
-        if slot.opening_slot:
-            day.emp_opening.append(employee)
-        if slot.closing_slot:
-            day.emp_closing.append(employee)
-
-        # Schedule employee
-        employee.scheduled.append(slot)
-        day.emp_working.append(employee)
+    # Schedule employee
+    employee.scheduled.append(slot)
+    day.emp_working.append(employee)
 
 # Display hours in 24/12 hour time
 def display_time(hours, day, twelve_hour):
