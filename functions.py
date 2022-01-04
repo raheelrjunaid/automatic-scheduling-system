@@ -1,34 +1,57 @@
 from random import sample
 from time import strftime, gmtime
+from days import Slot
 
 # Narrow down available time slots based on availability
-def potential_slot(employee_availability, day, emp_outside_hours):
-    slots = day.slots[:] # Available slots copy
-    for slot in day.slots:
-        if slot[0] < employee_availability[0] or slot[1] > employee_availability[1]:
-            slots.remove(slot)
-        # Remove slots if they aren't needed for closing or opening
-        elif slot[0] <= day.opening - .5 and len(day.emp_opening) >= emp_outside_hours:
-            slots.remove(slot)
-        elif slot[1] >= day.closing + .5 and len(day.emp_closing) >= emp_outside_hours:
-            slots.remove(slot)
+def potential_slot(emp_availability, day, emp_outside_hours):
+    if emp_availability is not None:
+        slots = day.slots[:]  # Available slots copy
+        for slot in day.slots:
+            if slot.start < emp_availability[0] or slot.end > emp_availability[1]:
+                slots.remove(slot)
+            # Remove slots if they aren't needed for closing or opening
+            elif slot.opening_slot and len(day.emp_opening) >= emp_outside_hours:
+                slots.remove(slot)
+            elif slot.closing_slot and len(day.emp_closing) >= emp_outside_hours:
+                slots.remove(slot)
+
+        if slots == []:  # Custom schedule outside of slots
+            # If they're available for an opening shift
+            if emp_availability[0] < day.opening - .5:
+                # If we don't need them for opening
+                if len(day.emp_opening) >= emp_outside_hours:
+                    emp_availability[0] = day.opening
+                else:
+                    emp_availability[0] = day.opening - .5
+
+            # If they're available for an closing shift
+            if emp_availability[1] > day.closing + .5:
+                # If we don't need them for closing
+                if len(day.emp_closing) >= emp_outside_hours:
+                    emp_availability[1] = day.closing
+                else:
+                    emp_availability[1] = day.closing + .5
+
+            return Slot(emp_availability[0], emp_availability[1],
+                        day.opening, day.closing)
+
+    else:
+        slots = None  # Don't allow them to be booked
+
     return slots
 
 # Add day to employee schedule
 def book_employee(employee, slots, day):
-    if slots == [] or slots is None: # Employee isn't available
+    if slots is None: # Employee isn't available
         employee.scheduled.append(None)
     else:
-        opening_time = day.opening - .5
-        closing_time = day.closing + .5
-
         # If slots is a list, employee doesn't have fixed hours
-        if type(slots[0]) is list:
+        if type(slots) is list:
             # Prioritize opening and closing shifts where needed
-            if opening_time in map(lambda x: x[0], slots):
-                slots = [slot for slot in slots if slot[0] <= opening_time]
-            elif closing_time in map(lambda x: x[1], slots):
-                slots = [slot for slot in slots if slot[1] >= closing_time]
+            if any(list(map(lambda slot: slot.opening_slot, slots))):
+                slots = [slot for slot in slots if slot.opening_slot]
+            if any(list(map(lambda slot: slot.closing_slot, slots))):
+                slots = [slot for slot in slots if slot.closing_slot]
 
             # Choose random shift
             slot = sample(slots, 1)[0]
@@ -37,9 +60,9 @@ def book_employee(employee, slots, day):
             slot = slots
 
         # Mark them as an opening/closing employee
-        if slot[0] <= opening_time:
+        if slot.opening_slot:
             day.emp_opening.append(employee)
-        elif slot[1] >= closing_time:
+        if slot.closing_slot:
             day.emp_closing.append(employee)
 
         # Schedule employee
