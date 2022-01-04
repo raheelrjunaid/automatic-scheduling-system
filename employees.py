@@ -1,4 +1,4 @@
-class Employee():
+class Employee:
    def __init__(self, name, availability, fixed_hours=False):
         self.name = name
         self.fixed_hours = fixed_hours
@@ -29,64 +29,19 @@ jasmine = Employee("jasmine", [
     None,
 ], fixed_hours=True)
 
-therese = Employee("therese", [
-    [10.5, 18.50],
-    [12, 20.50],
-    [12, 20.50],
-    [12, 20.50],
-    [13, 21.50],
-    [13, 21.50],
-    [9.30, 22]
-])
+# Regular Hours
+raheel = Employee("raheel", [[0, 23], None, [16, 23], None, [16, 23], [15, 23], [0, 23]])
 
-jamie = Employee("jamie", [
-    [0, 23],
-    [0, 23],
-    [0, 23],
-    [0, 23],
-    [0, 23],
-    [0, 23],
-    [0, 23],
-])
+therese = Employee("therese", [[10.5, 18.50], [12, 20.50], [12, 20.50], [12, 20.50], [13, 21.50], [13, 21.50], [9.30, 22]])
 
-aaron = Employee("aaron", [
-    [0, 23],
-    [0, 23],
-    [0, 23],
-    [0, 23],
-    [0, 23],
-    [0, 23],
-    [0, 23],
-])
+jamie = Employee("jamie", [[0, 23], [0, 23], [0, 23], [0, 23], [0, 23], [0, 23], [0, 23]])
 
-ben_o = Employee("ben o", [
-    None,
-    None,
-    None,
-    None,
-    None,
-    [0, 23],
-    [0, 23],
-])
+aaron = Employee("aaron", [[0, 23], [0, 23], [0, 23], [0, 23], [0, 23], [0, 23], [0, 23]])
 
-ben_a = Employee("ben a", [
-    [11, 18],
-    None,
-    [10, 18],
-    [12, 20],
-    [12, 20],
-    None,
-    [10, 18],
-])
+ben_o = Employee("ben o", [None, None, None, None, None, [0, 23], [0, 23]])
 
-monica = Employee("monica", [
-    [0, 23],
-    None,
-    None,
-    [16.5, 21],
-    None,
-    [16.5, 21],
-    None
-])
+ben_a = Employee("ben a", [[11, 18], None, [10, 18], [12, 20], [12, 20], None, [10, 18],])
 
-employees = [monica, ben_a, jamie, jasmine, therese, bandish, aaron, ben_o]
+monica = Employee("monica", [[0, 23], None, None, [16.5, 21], None, [16.5, 21], None])
+
+employees = [raheel, monica, ben_a, jamie, jasmine, therese, bandish, aaron, ben_o]
