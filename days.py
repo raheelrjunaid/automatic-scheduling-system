@@ -13,12 +13,12 @@ class Slot:
         
         if start < open_time:
             if open_time - start > .5:
-                raise ValueError("Slot cannot start {open_time - start} hours early")
+                raise ValueError(f"Slot cannot start {open_time - start} hours early")
             else:
                 self.opening_slot = True
         if end > close_time:
             if end - close_time > .5:
-                raise ValueError("Slot cannot end {end - close_time} hours early")
+                raise ValueError(f"Slot cannot end {end - close_time} hours early")
             else:
                 self.closing_slot = True
             
