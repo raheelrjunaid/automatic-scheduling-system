@@ -4,24 +4,23 @@ from days import Day
 
 class TestDays(unittest.TestCase):
     def setUp(self):
-        self.days = [
-            Day(11, 18),
-            Day(8, 21),
-        ]
+        self.day_1 = Day(11, 18)
+        self.day_2 = Day(8, 21)
 
     def test_day_slots(self):
         """
         Test if slots are properly dynamically generated based on hours
         """
-        self.assertEqual(self.days[0].opening, self.days[0].slots[1][0])
-        self.assertEqual(self.days[1].closing, self.days[1].slots[6][1])
-        self.assertNotEqual(self.days[1].closing, self.days[1].slots[3][1])
+        self.assertEqual(11, self.day_1.slots[1].start)
+        self.assertEqual(21, self.day_2.slots[6].end)
+        self.assertNotEqual(21, self.day_2.slots[3].end)
 
     def test_hour_reductions(self):
         """Test that 8 hour slots are not added to < 8 hour work days"""
-        self.assertIn([13, 18.5], self.days[0].slots)
+        self.assertEqual(10.5, self.day_1.slots[0].start)
+        self.assertEqual(18.5, self.day_1.slots[3].end)
         with self.assertRaises(IndexError):
-            self.days[0].slots[7]
+            self.day_1.slots[7]
 
 if __name__ == '__main__':
     unittest.main()
