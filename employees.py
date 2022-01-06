@@ -1,9 +1,10 @@
 class Employee:
-   def __init__(self, name, availability, fixed_hours=False):
+   def __init__(self, name, availability, max_working_days=5, fixed_hours=False):
         self.name = name
         self.fixed_hours = fixed_hours
         self.availability = availability
         self.scheduled = []
+        self.max_working_days = max_working_days
 
 from days import days
 
