@@ -8,6 +8,8 @@ python-lsp-server = "*"
 pyright = "*"
 neovim = "*"
 rich = "*"
+pudb = "*"
+nose2 = "*"
 
 [dev-packages]
 
