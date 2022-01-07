@@ -1,8 +1,6 @@
-<h1 align="center">Welcome to the Automatic Scheduling System 👋</h1>
-<p>
-  <a href="https://www.npmjs.com/package/the Automatic Scheduling System" target="_blank">
-    <img alt="Version" src="https://img.shields.io/npm/v/the Automatic Scheduling System.svg">
-  </a>
+<h1 align="center">Welcome to the Automatic Scheduling System 📆</h1>
+<p align="center"><strong>It automatically schedules people. Duh.</strong></p>
+<p align="center">
   <a href="https://choosealicense.com/licenses/mit/" target="_blank">
     <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
   </a>
@@ -11,13 +9,14 @@
   </a>
   <img alt="GitHub branch checks state" src="https://img.shields.io/github/checks-status/raheelrjunaid/automatic-scheduling-system/main">
 </p>
+ASS is a Python-based employee schedule generator that uses a hands-off approach. Minimal feedback is required by the user; they adjust the parameters, the algorithms take care of the rest. If your employees have fixed hours, days off, extra availability, or are always required, ASS has you covered.
+<img src="https://user-images.githubusercontent.com/60077374/148492381-b34a8cd8-d987-43c4-971b-8babe1e3c49d.png">
 
-> An algorithm for scheduling employees based on availability and opening/closing hours.
-
-## Install
-
+## Requirements
+- You will need to have [`pipenv`](https://pypi.org/project/pipenv/) installed.
+- Once installed, run:
 ```sh
-pip install pipenv; pipenv shell
+pipenv shell
 ```
 
 ## Usage
