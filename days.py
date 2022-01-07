@@ -3,8 +3,7 @@ class Slot:
 
         self.start = start
         self.end = end
-        self.opening_slot = False
-        self.closing_slot = False
+        self.status = None
         
         if start < 0:
             raise ValueError("Slot start cannot be negative")
@@ -15,12 +14,12 @@ class Slot:
             if open_time - start > .5:
                 raise ValueError(f"Slot cannot start {open_time - start} hours early")
             else:
-                self.opening_slot = True
+                self.status = "opening"
         if end > close_time:
             if end - close_time > .5:
-                raise ValueError(f"Slot cannot end {end - close_time} hours early")
+                raise ValueError(f"Slot cannot end {end - close_time} hours end")
             else:
-                self.closing_slot = True
+                self.status = "closing"
             
 class Day:
     def __init__(self, opening, closing, name=None):
