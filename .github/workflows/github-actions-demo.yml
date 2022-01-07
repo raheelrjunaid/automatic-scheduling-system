@@ -13,10 +13,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: "3.9"
-      - name: Install dependecies
-        uses: VaultVulp/action-pipenv@v2.0.1
-        with:
-          command: install -d # Install all dependencies, including development ones
 
       - name: Install dependencies
         run: |
