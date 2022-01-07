@@ -46,8 +46,11 @@ def book_employee(employee, slots, day, day_number=False):
     if slots is None: # Employee isn't available
         employee.scheduled.append(None)
         return
-    # If slots is a list, employee doesn't have fixed hours
-    if type(slots) is list:
+    # if slot is of data type: slot, employee has fixed_hours
+    if employee.fixed_hours and type(slots) is not list:
+        slot = slots
+    # If slots is a list, employee doesn't have fixed_hours
+    else:
         # Prioritize opening and closing shifts where needed
         special_slots = []
         if any(list(map(lambda slot: slot.status == "opening", slots))):
@@ -61,9 +64,6 @@ def book_employee(employee, slots, day, day_number=False):
         else:
             # Choose random shift
             slot = sample(slots, 1)[0]
-    # Employee has fixed hours
-    else:
-        slot = slots
 
     # Mark them as an opening/closing employee
     if slot.status == "opening":
@@ -130,7 +130,7 @@ def reduce_time(employees, days, emp_outside_hours):
     while overbooked_employees != []:
         iteration_count += 1
 
-        if iteration_count == len(employees) * len(days):
+        if iteration_count == len(employees) ** len(days):
             print("MANUAL INPUT NEEDED. OVERBOOKED EMPLOYEES:",
                 *list(map(lambda emp: emp.name, overbooked_employees)))
             return False
