@@ -23,8 +23,10 @@ for day_number, day in enumerate(days):
     hours.append(display_time([day.opening, day.closing], day, twelve_hour))
     generate_day(employees, day, day_number, emp_outside_hours)
 
+# Reduce the working days of overbooked_employees
 reduce_time(employees, days, emp_outside_hours)
 
+# Mark person as unscheduled (as an effect of reduce_time) instead of N/A
 day_off = []
 for day_number, day in enumerate(days):
     schedule_table.add_column(f"{day.name}", justify="center")
@@ -66,6 +68,6 @@ for employee in employees:
     # Add employee to schedule
     schedule_table.add_row(employee.name, *schedule)
 
-# Print table
+# Print tables
 print(schedule_table)
 print(meta_table)
