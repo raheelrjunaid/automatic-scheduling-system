@@ -44,4 +44,14 @@ ben_a = Employee("ben a", [[11, 18], None, [10, 18], [12, 20], [12, 20], None, [
 
 monica = Employee("monica", [[0, 23], None, None, [16.5, 21], None, [16.5, 21], None])
 
-employees = [raheel, monica, ben_a, jamie, jasmine, therese, bandish, aaron, ben_o]
+employees = [
+    raheel,
+    monica,
+    ben_a,
+    jamie,
+    jasmine,
+    therese,
+    bandish,
+    aaron,
+    ben_o
+]
