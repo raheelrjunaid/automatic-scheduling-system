@@ -7,7 +7,7 @@
   <a href="https://twitter.com/raheelrjunaid" target="_blank">
     <img alt="Twitter: raheelrjunaid" src="https://img.shields.io/twitter/follow/raheelrjunaid.svg?style=social" />
   </a>
-  <img alt="GitHub branch checks state" src="https://img.shields.io/github/checks-status/raheelrjunaid/automatic-scheduling-system/main">
+  <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/raheelrjunaid/automatic-scheduling-system/v1.0%20-%20CLI%20Tests">
 </p>
 ASS is a Python-based employee schedule generator that uses a hands-off approach. Minimal feedback is required by the user; they adjust the parameters, the algorithms take care of the rest. If your employees have fixed hours, days off, extra availability, or are always required, ASS has you covered.
 <br><br>
