@@ -44,10 +44,9 @@ def potential_slot(emp_availability, day, emp_outside_hours):
 # Add day to employee schedule
 def book_employee(employee, slots, day, day_number=False):
     if slots is None: # Employee isn't available
-        employee.scheduled.append(None)
-        return
+        slot = None
     # if slot is of data type: slot, employee has fixed_hours
-    if employee.fixed_hours and type(slots) is not list:
+    if employee.fixed_hours or type(slots) is not list:
         slot = slots
     # If slots is a list, employee doesn't have fixed_hours
     else:
@@ -66,17 +65,18 @@ def book_employee(employee, slots, day, day_number=False):
             slot = sample(slots, 1)[0]
 
     # Mark them as an opening/closing employee
-    if slot.status == "opening":
-        day.emp_opening.append(employee)
-    if slot.status == "closing":
-        day.emp_closing.append(employee)
+    if slot:
+        if slot.status == "opening":
+            day.emp_opening.append(employee)
+        elif slot.status == "closing":
+            day.emp_closing.append(employee)
+
+        day.emp_working.append(employee)
 
     if type(day_number) == int:
         employee.scheduled[day_number] = slot
     else:
         employee.scheduled.append(slot)
-
-    day.emp_working.append(employee)
 
 # Display hours in 24/12 hour time
 def display_time(hours, day, twelve_hour):
@@ -152,8 +152,6 @@ def reduce_time(employees, days, emp_outside_hours):
 
             overbooked_employees = calc_overbooked_emps(employees)
             if overbooked_employees == []:
-                # set_trace()
-                # result = calc_overbooked_emps(employees)
                 return True
             else:
                 emps_to_be_removed = overbooked_employees[:]
@@ -167,9 +165,8 @@ def reduce_time(employees, days, emp_outside_hours):
                         emps_to_be_removed.remove(emp)
 
             if emps_to_be_removed != []:
-                # set_trace()
-                unbook_employee(emps_to_be_removed[randint(0, len(emps_to_be_removed) - 1)],
-                        day, days.index(day))
+                emp = emps_to_be_removed[randint(0, len(emps_to_be_removed) - 1)]
+                unbook_employee(emp, day, days.index(day))
             else:
                 generate_day(employees, day, days.index(day), emp_outside_hours, toggle=True)
 
@@ -185,7 +182,10 @@ def generate_day(employees, day, day_number, emp_outside_hours, toggle=False):
     # Prioritize fixed hour employees
     for employee in fixed_employees:
         emp_hours = employee.availability[day_number]
-        book_employee(employee, emp_hours, day)
+        if toggle:
+            book_employee(employee, emp_hours, day, day_number)
+        else:
+            book_employee(employee, emp_hours, day)
 
     # Randomize employee order every day
     # This prevents bias towards employees based on order
@@ -196,10 +196,10 @@ def generate_day(employees, day, day_number, emp_outside_hours, toggle=False):
         # If employee is available (does not equal None)
         if emp_availability:
             potential_slots = potential_slot(emp_availability, day, emp_outside_hours)
-            if toggle:
-                book_employee(employee, potential_slots, day, day_number)
-            else:
-                book_employee(employee, potential_slots, day)
+        else:
+            potential_slots = None
 
-        else:  # Not available
-            employee.scheduled.append(None)
+        if toggle:
+            book_employee(employee, potential_slots, day, day_number)
+        else:
+            book_employee(employee, potential_slots, day)
