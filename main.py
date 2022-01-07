@@ -1,4 +1,5 @@
-from functions import display_time, generate_day
+from functions import display_time, generate_day, reduce_time
+from pudb import set_trace
 from rich.table import Table
 from rich.prompt import Confirm
 from rich import print, box
@@ -6,8 +7,10 @@ from employees import employees
 from days import days
 
 # Create table
-schedule_table = Table(title="Employee Schedule", box=box.MINIMAL_HEAVY_HEAD, show_header=True, show_lines=True)
+schedule_table = Table(title="Employee Schedule", box=box.MINIMAL_HEAVY_HEAD, show_lines=True)
 schedule_table.add_column("Name")
+meta_table = Table(title="Day Metadata", box=box.MINIMAL_HEAVY_HEAD, show_lines=True)
+meta_table.add_column("Parameter")
 
 # Initial Parameters
 emp_outside_hours = 2
@@ -16,18 +19,30 @@ hours = []
 
 # Schedule employees for every day
 for day_number, day in enumerate(days):
-    # Add a day column to the calendar because I can
-    schedule_table.add_column(f"{day.name.capitalize()}\n {day.emp_working}", justify="center")
     # Add day to store hours row
     hours.append(display_time([day.opening, day.closing], day, twelve_hour))
-
     generate_day(employees, day, day_number, emp_outside_hours)
 
-    schedule_table.add_column(f"{day.name.capitalize()}\nCoverage: {len(day.emp_working)}",
-            justify="center")
+reduce_time(employees, days, emp_outside_hours)
+
+day_off = []
+for day_number, day in enumerate(days):
+    schedule_table.add_column(f"{day.name}", justify="center")
+    meta_table.add_column(f"{day.name}", justify="center")
+    day_off.append([])
+    for employee in employees:
+        if employee.availability[day_number] is not None and employee not in day.emp_working:
+            day_off[-1].append(employee)
 
 # Add hours to schedule table
-schedule_table.add_row("Hours", *hours, style="black on yellow")
+meta_table.add_row("Hours", *hours, style="blue")
+meta_table.add_row("Coverage", *[str(len(day.emp_working)) + " Working" for day in days])
+meta_table.add_row("Opening", *[str(len(day.emp_opening)) + " Opening" for day in days], style="green")
+meta_table.add_row("Closing", *[str(len(day.emp_closing)) + " Closing" for day in days], style="red")
+meta_table.add_row("Day Off", 
+    *["None" if not day else ", ".join([emp.name for emp in day]) for day in day_off],
+    style="yellow"
+)
 
 # Display employees in alphabetical order (by name)
 employees.sort(key=lambda employee: employee.name)
@@ -38,7 +53,10 @@ for employee in employees:
     # If they are, display their opening and closing shifts
     for day_number, day in enumerate(days):
         if employee.scheduled[day_number] is None:
-            schedule.append("[grey50]N/A")
+            if employee.availability[day_number] is None:
+                schedule.append("[grey50]N/A")
+            else:
+                schedule.append("[yellow]Off")
         else:
             schedule.append(display_time([
                 employee.scheduled[day_number].start,
@@ -46,9 +64,8 @@ for employee in employees:
             ], day, twelve_hour))
 
     # Add employee to schedule
-    schedule_table.add_row(employee.name.capitalize(), *schedule)
+    schedule_table.add_row(employee.name, *schedule)
 
 # Print table
-print("\n[bold green]Green[/] indicates opening shift.")
-print("[bold red]Red[/] indicates closing shift.\n")
 print(schedule_table)
+print(meta_table)
