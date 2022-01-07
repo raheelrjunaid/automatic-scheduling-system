@@ -1,5 +1,4 @@
-from random import shuffle
-from functions import potential_slot, book_employee, display_time
+from functions import display_time, generate_day
 from rich.table import Table
 from rich.prompt import Confirm
 from rich import print, box
@@ -13,35 +12,19 @@ schedule_table.add_column("Name")
 # Initial Parameters
 emp_outside_hours = 2
 twelve_hour = Confirm.ask("12 Hour Time?")  # Convert schedule to 12 hour time
-fixed_employees = [employee for employee in employees if employee.fixed_hours]
-reg_employees = [employee for employee in employees if not employee.fixed_hours]
 hours = []
 
 # Schedule employees for every day
 for day_number, day in enumerate(days):
     # Add a day column to the calendar because I can
-    schedule_table.add_column(day.name.capitalize(), justify="center")
+    schedule_table.add_column(f"{day.name.capitalize()}\n {day.emp_working}", justify="center")
     # Add day to store hours row
     hours.append(display_time([day.opening, day.closing], day, twelve_hour))
 
-    # Prioritize fixed hour employees
-    for employee in fixed_employees:
-        employee_hours = employee.availability[day_number]
-        book_employee(employee, employee_hours, day)
+    generate_day(employees, day, day_number, emp_outside_hours)
 
-    # Randomize employee order every day
-    # This prevents bias towards employees based on order
-    shuffle(reg_employees)
-    for employee in reg_employees:
-        emp_availability = employee.availability[day_number]
-
-        # If employee is available (does not equal None)
-        if emp_availability:
-            potential_slots = potential_slot(emp_availability, day, emp_outside_hours)
-            book_employee(employee, potential_slots, day)
-
-        else:  # Not available
-            employee.scheduled.append(None)
+    schedule_table.add_column(f"{day.name.capitalize()}\nCoverage: {len(day.emp_working)}",
+            justify="center")
 
 # Add hours to schedule table
 schedule_table.add_row("Hours", *hours, style="black on yellow")
@@ -58,8 +41,8 @@ for employee in employees:
             schedule.append("[grey50]N/A")
         else:
             schedule.append(display_time([
-                employee.scheduled[day_number][0],
-                employee.scheduled[day_number][1]
+                employee.scheduled[day_number].start,
+                employee.scheduled[day_number].end
             ], day, twelve_hour))
 
     # Add employee to schedule

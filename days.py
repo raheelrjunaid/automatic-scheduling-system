@@ -24,7 +24,8 @@ class Slot:
 class Day:
     def __init__(self, opening, closing, name=None):
 
-        self.name = name
+        if name:
+            self.name = name.capitalize()
         self.emp_working = []
         self.emp_closing = []
         self.emp_opening = []

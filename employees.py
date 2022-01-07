@@ -1,6 +1,6 @@
 class Employee:
    def __init__(self, name, availability, max_working_days=5, fixed_hours=False):
-        self.name = name
+        self.name = name.capitalize()
         self.fixed_hours = fixed_hours
         self.availability = availability
         self.scheduled = []
