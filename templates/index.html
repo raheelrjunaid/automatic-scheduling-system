@@ -1,11 +1,35 @@
 {% extends 'layout.html' %}
 
 {% block body %}
-<table>
-  <thead>
-    <tr>
-      <th></th>
-    </tr>
-  </thead>
-</table>
+<h1 class="text-center">Home</h1>
+<div class="container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                {% for day in days %}
+                <th scope="col">{{ day.name }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for employee in employees %}
+            <tr>
+                <th scope="row">{{ employee.name }}</th>
+                {% for slot in employee.scheduled_times %}
+                {% if slot[1] == "opening" %}
+                <td class="table-success">{{ slot[0] }}</td>
+                {% elif slot[1] == "closing" %}
+                <td class="table-danger">{{ slot[0] }}</td>
+                {% elif slot[0] == "Off" %}
+                <td class="table-warning">{{ slot[0] }}</td>
+                {% else %}
+                <td>{{ slot[0] }}</td>
+                {% endif %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}
