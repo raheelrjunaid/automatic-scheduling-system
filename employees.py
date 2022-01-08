@@ -1,10 +1,27 @@
 class Employee:
-   def __init__(self, name, availability, max_working_days=5, fixed_hours=False):
+    def __init__(self, name, availability, max_working_days=5, fixed_hours=False):
         self.name = name.capitalize()
         self.fixed_hours = fixed_hours
         self.availability = availability
         self.scheduled = []
+        self.scheduled_times = []
         self.max_working_days = max_working_days
+
+    def generate_times(self, display_time, twelve_hour):
+        time_scheduled = []
+        for day_number, slot in enumerate(self.scheduled):
+            if slot is None:
+                if self.availability[day_number] is None:
+                    time_scheduled.append(("N/A", None))
+                else:
+                    time_scheduled.append(("Off", None))
+            else:
+                time_scheduled.append(
+                    display_time(
+                        slot, twelve_hour
+                    )
+                )
+        self.scheduled_times = time_scheduled
 
 from days import days
 
