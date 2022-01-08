@@ -79,9 +79,9 @@ def book_employee(employee, slots, day, day_number=False):
         employee.scheduled.append(slot)
 
 # Display hours in 24/12 hour time
-def display_time(hours, day, twelve_hour):
-    start = hours[0]  # Beginning time
-    end = hours[1]  # Ending time
+def display_time(slot, twelve_hour, rich=True):
+    start = slot.start  # Beginning time
+    end = slot.end  # Ending time
     if twelve_hour:
         opening = strftime("%-I:%M%p", gmtime(start*60*60))
         closing = strftime("%-I:%M%p", gmtime(end*60*60))
@@ -90,14 +90,15 @@ def display_time(hours, day, twelve_hour):
         closing = strftime("%-H:%M", gmtime(end*60*60))
     
     # Highlight opening or closing
-    if start < day.opening:
-        timing = f"[green bold]{opening}[/] - {closing}"
-    elif end > day.closing:
-        timing = f"{opening} - [red bold]{closing}"
-    else:
-        timing = f"{opening} - {closing}"
+    if rich:
+        if slot.status == "opening":
+            timing = f"[green bold]{opening}[/] - {closing}"
+        elif slot.status == "closing":
+            timing  = f"{opening} - [red bold]{closing}"
 
-    return timing
+    timing = f"{opening} - {closing}"
+
+    return timing, slot.status
 
 # Remove employee from scheduled day
 def unbook_employee(employee, day, day_number):
