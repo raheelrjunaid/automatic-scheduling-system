@@ -7,10 +7,11 @@ name = "pypi"
 python-lsp-server = "*"
 pyright = "*"
 neovim = "*"
-rich = "*"
 pudb = "*"
 nose2 = "*"
 flask = "*"
+black = "*"
+flask-sqlalchemy = "*"
 
 [dev-packages]
 
