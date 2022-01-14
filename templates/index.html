@@ -1,35 +1,52 @@
 {% extends 'layout.html' %}
 
 {% block body %}
-<h1 class="text-center">Home</h1>
-<div class="container">
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">Name</th>
-                {% for day in days %}
-                <th scope="col">{{ day.name }}</th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for employee in employees %}
-            <tr>
-                <th scope="row">{{ employee.name }}</th>
-                {% for slot in employee.scheduled_times %}
-                {% if slot[1] == "opening" %}
-                <td class="table-success">{{ slot[0] }}</td>
-                {% elif slot[1] == "closing" %}
-                <td class="table-danger">{{ slot[0] }}</td>
-                {% elif slot[0] == "Off" %}
-                <td class="table-warning">{{ slot[0] }}</td>
-                {% else %}
-                <td>{{ slot[0] }}</td>
-                {% endif %}
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<h1 class="display-1 text-center">ASS</h1>
+<div class="text-center">
+    <h3 id="month-and-year"></h3>
+    <button class="btn btn-secondary" id="previous-month"></button>
+    <button class="btn btn-secondary" id="next-month"></button>
 </div>
+<table class="calendar table table-bordered">
+    <thead>
+        <tr>
+            <th data-number=0 class="col">Sunday</th>
+            <th data-number=1 class="col">Monday</th>
+            <th data-number=2 class="col">Tuesday</th>
+            <th data-number=3 class="col">Wednesday</th>
+            <th data-number=4 class="col">Thursday</th>
+            <th data-number=5 class="col">Friday</th>
+            <th data-number=6 class="col">Saturday</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<h3>Employees</h3>
+<button class="btn btn-primary" onclick="get_employees()">Refresh</button>
+<button class="btn btn-danger" onclick="reset_employees()">RESET</button>
+<ul id="employees-list"></ul>
+<h3>Create Employee</h3>
+<form novalidate id="add_employee_form" accept-charset="utf-8">
+    <div>
+        <label for="first_name" class="form-label">First Name</label>
+        <input type="text" name="first_name" class="form-control" id="first_name" required>
+        <div class="invalid-feedback">First name is required</div>
+    </div>
+    <div>
+        <label for="last_name" class="form-label">Last Name</label>
+        <input type="text" name="last_name" class="form-control" id="last_name" required>
+        <div class="invalid-feedback">Last name is required</div>
+    </div>
+    <div class="form-check">
+        <input class="form-check-input" name="fixed_hours" type="checkbox" id="fixed_hours">
+        <label class="form-check-label" for="fixed_hours">Fixed Hours</label>
+    </div>
+    <div>
+        <label for="max_working_days" class="form-label">Maximum Working Days</label>
+        <input type="number" value=5 name="max_working_days" class="form-control" id="max_working_days" required>
+        <div class="invalid-feedback">Maximum working days is required</div>
+    </div>
+    <input type="submit" value="Create" class="btn btn-primary">
+</form>
 {% endblock %}
