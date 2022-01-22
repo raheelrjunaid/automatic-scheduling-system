@@ -1,13 +1,14 @@
 {% extends 'layout.html' %}
 
 {% block body %}
-<h1 class="display-1 text-center">ASS</h1>
+<h1 class="display-1 text-center">PASS</h1>
 <div class="text-center">
     <h3 id="month-and-year"></h3>
     <button class="btn btn-secondary" id="previous-month"></button>
     <button class="btn btn-secondary" id="next-month"></button>
+    <button class="btn btn-secondary" id="calendar-today">Today</button>
 </div>
-<table class="calendar table table-bordered">
+<table style="table-layout: fixed" id="calendar" class="calendar table table-bordered">
     <thead>
         <tr>
             <th data-number=0 class="col">Sunday</th>
@@ -26,6 +27,32 @@
 <button class="btn btn-primary" onclick="get_employees()">Refresh</button>
 <button class="btn btn-danger" onclick="reset_employees()">RESET</button>
 <ul id="employees-list"></ul>
+
+<h3>Store Hours</h3>
+<form novalidate id="add_date_form" accept-charset="utf-8">
+    <div>
+        <label for="date" class="form-label">Date</label>
+        <input type="date" name="date" class="form-control" id="date" required>
+        <div class="invalid-feedback">Date is required</div>
+    </div>
+    <div>
+        <label for="opening_time" class="form-label">Opening Time</label>
+        <input type="time" name="opening_time" class="form-control" id="opening_time" required>
+        <div class="invalid-feedback">Opening Time is required</div>
+    </div>
+    <div>
+        <label for="closing_time" class="form-label">Closing Time</label>
+        <input type="time" name="closing_time" class="form-control" id="closing_time" required>
+        <div class="invalid-feedback">Closing Time is required</div>
+    </div>
+    <div>
+        <label for="min_emps_working" class="form-label">Minimum Employees Working</label>
+        <input type="number" name="min_emps_working" class="form-control" id="min_emps_working" required>
+        <div class="invalid-feedback">Minimum Employees working required</div>
+    </div>
+    <input type="submit" value="Add" class="btn btn-primary">
+</form>
+
 <h3>Create Employee</h3>
 <form novalidate id="add_employee_form" accept-charset="utf-8">
     <div>
