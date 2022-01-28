@@ -54,7 +54,7 @@ function Dates(props) {
             <Row justify="space-around">
                 { list_of_days.slice(0, 7).map((day) => (<Col key={day}>{day.format("ddd")}</Col>)) }
             </Row>
-            { list_of_weeks.map((week, week_index) => (<Row>{week.map((day) => (<Day currentMonth={current_month.month()} day={day} />))}</Row>)) }
+            { list_of_weeks.map((week) => (<Row>{week.map((day) => (<Day currentMonth={current_month.month()} day={day} />))}</Row>)) }
         </>
     )
 }
@@ -74,7 +74,6 @@ function Day(props) {
         }
         getDateData()
         setLoading(false)
-    //     TODO function get_employees_working_today
     }, [])
 
     return (
@@ -88,7 +87,7 @@ function Day(props) {
                         {props.day.format("D")}
                     </Col>
                     <Col>{props.day.isAfter(dayjs()) && 
-                        <Popover content={<AddHoursForm day_hours={dateData} day={props.day}/>} title={`${dateData ? "Edit" : "Add Business Hours to"} ${props.day.format("MMM D, YYYY")}`} trigger="click">
+                        <Popover content={<AddHoursForm dateData={dateData} setDateData={setDateData} day={props.day}/>} title={`${dateData ? "Edit" : "Add Business Hours to"} ${props.day.format("MMM D, YYYY")}`} trigger="click">
                             <Tooltip title={dateData ? "Edit hours" : "Add hours"}>
                                 <Button size="small" type="dashed" shape="circle" icon={dateData ? <EditOutlined/> : <PlusOutlined/>}></Button>
                             </Tooltip>
@@ -108,42 +107,61 @@ function Day(props) {
 
 function AddHoursForm(props) {
     const [employeesState, setEmployeesState] = useState({})
-    const [isLoading, setLoading] = useState(false)
+    const [dateData, setDateData] = useState(props.dateData)
+    const [submitState, setSubmitState] = useState('loading')
 
     useEffect(() => {
-        setLoading(true)
         async function getAllEmployees() {
             const data = await axios.get("/api/employees")
             setEmployeesState({ allEmployeesLength: data.data.length })
         }
         getAllEmployees()
-        setLoading(false)
+        setSubmitState(false)
     }, [])
 
+    function onValuesChange(changedValue, { min_emps_working, opening_closing_times }) {
+        if (min_emps_working !== dateData?.min_emps_working ||
+            opening_closing_times[0].hour() !== dateData?.opens ||
+            opening_closing_times[1].hour() !== dateData?.closes) {
+            setSubmitState(true)
+        } else {
+            setSubmitState(false)
+        }
+    }
+
     async function onSubmit({ min_emps_working, opening_closing_times }) {
-        setLoading(true)
+        setSubmitState('loading')
         message.loading({content: "Sending Data", key: "date_message"})
         const data = {
             min_emps_working,
             opens: opening_closing_times[0].hour(),
             closes: opening_closing_times[1].hour()
         }
-        if (props.day_hours) data._id = props.day_hours._id
-        else data.date = props.day.format()
 
-        const response = props.day_hours? await axios.put('/api/dates', data): await axios.post('/api/dates', data)
-        setLoading(false)
-        message.success({content: response.data.message, key: "date_message"})
+        if (dateData) data._id = dateData._id // Field is being edited
+        else data.date = props.day.format() // Field is being created (inject new date)
+
+        try {
+            const response = dateData? await axios.put('/api/dates', data): await axios.post('/api/dates', data)
+            if (!dateData) data['_id'] = response.data.result.insertedId
+            props.setDateData(data)
+            setDateData(data)
+            setSubmitState(false)
+            message.success({content: response.data.message, key: "date_message"})
+        } catch (error) {
+            message.error({ content: error.response.data.err, key: 'date_message' })
+        }
     }
-
+    
     return (
         <Form
         layout="vertical"
         requiredMark
         onFinish={onSubmit}
-        initialValues={props.day_hours ? {
-            opening_closing_times: [moment().hour(props.day_hours.opens), moment().hours(props.day_hours.closes)],
-            min_emps_working: props.day_hours.min_emps_working
+        onValuesChange={onValuesChange}
+        initialValues={dateData ? {
+            opening_closing_times: [moment().hour(dateData.opens), moment().hours(dateData.closes)],
+            min_emps_working: dateData.min_emps_working
         } : { min_emps_working: 0 }}
         >
             <Form.Item rules={[{ required: true, message: "Please input opening and closing times"}]} label="Opening/Closing Times" name="opening_closing_times" tooltip="Required">
@@ -153,7 +171,7 @@ function AddHoursForm(props) {
                 <InputNumber min={0} max={employeesState.allEmployeesLength || 0}/>
             </Form.Item>
             <Form.Item>
-                <Button loading={isLoading} htmlType="submit" type="primary">Submit</Button>
+                <Button disabled={submitState ? false: true} loading={submitState === 'loading'} htmlType="submit" type="primary">Submit</Button>
             </Form.Item>
             <Typography.Text type="secondary">Don't worry, you can edit this after you're done.</Typography.Text>
         </Form>
