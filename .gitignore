@@ -2,3 +2,4 @@
 sqlitedb.py
 
 backend/.env
+node_modules
