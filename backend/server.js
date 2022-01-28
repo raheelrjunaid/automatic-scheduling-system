@@ -3,6 +3,7 @@ import express from 'express'
 import cors from 'cors'
 import { connectToServer, getDB } from "./db/conn.js"
 import employeesRouter from "./routes/employees.js"
+import datesRouter from "./routes/dates.js"
 const app = express()
 
 app.use(cors())
@@ -12,7 +13,8 @@ app.get("/", (req, res) => {
     res.json({"page": "home"})
 })
 
-app.use("/api", employeesRouter)
+app.use("/api/employees", employeesRouter)
+app.use("/api/dates", datesRouter)
 
 // perform a database connection when the server starts
 connectToServer(function (err) {
