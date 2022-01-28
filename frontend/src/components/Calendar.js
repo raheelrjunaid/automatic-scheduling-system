@@ -1,60 +1,47 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+import dayjs from 'dayjs'
+import objectSupport from 'dayjs/plugin/objectSupport'
+import { Skeleton, message, Tooltip, Button, Badge, Typography, Row, Col, Form, Popover, InputNumber, TimePicker, Space } from 'antd'
+import 'antd/dist/antd.css'
+import { EditOutlined, LeftOutlined, DoubleLeftOutlined, DoubleRightOutlined, RightOutlined, PlusOutlined } from '@ant-design/icons'
+import moment from 'moment'
+
+dayjs.extend(objectSupport);
 
 export default function Calendar() {
-    const [month, setMonth] = useState(new Date())
+    const [month, setMonth] = useState(dayjs())
 
-    function nextMonth() {
-        setMonth(new Date(month.getFullYear(), month.getMonth() + 1))
-    }
-
-    function prevMonth() {
-        setMonth(new Date(month.getFullYear(), month.getMonth() - 1))
+    function changeDate(increment, interval) {
+        setMonth(month.add(increment, interval))
     }
 
     return (
         <>
-            <caption>{month.toLocaleDateString()}</caption>
-            <button onClick={prevMonth}>Previous Month</button>
-            <button onClick={nextMonth}>Next Month</button>
-            <Dates year={month.getFullYear()} month={month.getMonth()} />
+            <Row align="center">
+                <Col>
+                    <Button type="text" shape="circle" onClick={() => changeDate(-1, 'year')} icon={<DoubleLeftOutlined/>}/>
+                    <Button type="text" shape="circle" onClick={() => changeDate(-1, 'month')} icon={<LeftOutlined/>}/>
+                </Col>
+                <Col span={6}>
+                    <Typography.Title style={{ textAlign: "center" }} level={4}>{month.format("MMMM, YYYY")}</Typography.Title>
+                </Col>
+                <Col>
+                    <Button type="text"shape="circle"  onClick={() => changeDate(1, 'month')} icon={<RightOutlined/>}/>
+                    <Button type="text" shape="circle" onClick={() => changeDate(1, 'year')} icon={<DoubleRightOutlined/>}/>
+                </Col>
+            </Row>
+            <Dates year={month.year()} month={month.month()} />
         </>
     )
 }
 
 function Dates(props) {
-    const month = new Date(props.year, props.month)
+    const current_month = dayjs({year: props.year, month: props.month}).startOf('month')
     let list_of_days = []
 
-    function getDays(year, month) {
-        let date = new Date(year, month)
-        let date_month = date.getMonth()
-        let days = []
-        while (date.getMonth() === date_month) {
-            days.push(new Date(date));
-            date.setDate(date.getDate() + 1);
-        }
-        return days
-    }
-
-    if (month.getDay() !== 0) {
-        let days = getDays(props.year, props.month - 1)
-        days = days.slice(days.length - month.getDay())
-        for (let i = 0; i < month.getDay(); i++) {
-            list_of_days.push(days[i])
-        }
-    }
-
-    getDays(props.year, props.month).forEach((day) => {
-        list_of_days.push(day)
-    })
-
-    let last_day = list_of_days[list_of_days.length - 1]
-    if (last_day.getDay() !== 6) {
-        let days = getDays(props.year, props.month + 1)
-        for (let i = 0; last_day.getDay() !== 6; i++) {
-            list_of_days.push(days[i])
-            last_day = list_of_days[list_of_days.length - 1]
-        }
+    for (let i = -current_month.day(); i <= current_month.daysInMonth() + (5 - current_month.endOf('month').day()); i++) {
+        list_of_days.push(current_month.add(i, 'day'))
     }
 
     let list_of_weeks = []
@@ -63,21 +50,112 @@ function Dates(props) {
     }
 
     return (
-        <table>
-            <thead>
-                <tr>
-                    {list_of_days.slice(0, 7).map((day) => (<th key={day}>{day.toLocaleString("default", { weekday : "long" })}</th>))}
-                </tr>
-            </thead>
-            <tbody>
-                {list_of_weeks.map((week, week_index) => (<tr key={week_index}>{week.map((day) => (<Day month={month.getMonth()} date={day}/>))}</tr>))}
-            </tbody>
-        </table>
+        <>
+            <Row justify="space-around">
+                { list_of_days.slice(0, 7).map((day) => (<Col key={day}>{day.format("ddd")}</Col>)) }
+            </Row>
+            { list_of_weeks.map((week, week_index) => (<Row>{week.map((day) => (<Day currentMonth={current_month.month()} day={day} />))}</Row>)) }
+        </>
     )
 }
 
 function Day(props) {
+    const [dateData, setDateData] = useState(null)
+    const [isLoading, setLoading] = useState(true)
+
+    useEffect(() => {
+        async function getDateData() {
+            try {
+                const date = await axios.get(`/api/dates/${props.day.format()}`)
+                setDateData(date.data.result)
+            } catch (error) {
+                console.log(error)
+            }
+        }
+        getDateData()
+        setLoading(false)
+    //     TODO function get_employees_working_today
+    }, [])
+
     return (
-        <td key={props.day_index} className={props.month !== props.date.getMonth() ? "extra": "regular"}>{props.date.getDate()}</td>
+        <Col flex="auto" style={{
+            borderTop: "solid 2px lightgrey",
+            margin: "8px 4px"
+        }}>
+            <Skeleton active loading={isLoading}>
+                <Row justify="space-between">
+                    <Col>
+                        {props.day.format("D")}
+                    </Col>
+                    <Col>{props.day.isAfter(dayjs()) && 
+                        <Popover content={<AddHoursForm day_hours={dateData} day={props.day}/>} title={`${dateData ? "Edit" : "Add Business Hours to"} ${props.day.format("MMM D, YYYY")}`} trigger="click">
+                            <Tooltip title={dateData ? "Edit hours" : "Add hours"}>
+                                <Button size="small" type="dashed" shape="circle" icon={dateData ? <EditOutlined/> : <PlusOutlined/>}></Button>
+                            </Tooltip>
+                        </Popover>
+                    }
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        <Badge status="success" text="Employees" />
+                    </Col>
+                </Row>
+            </Skeleton>
+        </Col>
+    )
+}
+
+function AddHoursForm(props) {
+    const [employeesState, setEmployeesState] = useState({})
+    const [isLoading, setLoading] = useState(false)
+
+    useEffect(() => {
+        setLoading(true)
+        async function getAllEmployees() {
+            const data = await axios.get("/api/employees")
+            setEmployeesState({ allEmployeesLength: data.data.length })
+        }
+        getAllEmployees()
+        setLoading(false)
+    }, [])
+
+    async function onSubmit({ min_emps_working, opening_closing_times }) {
+        setLoading(true)
+        message.loading({content: "Sending Data", key: "date_message"})
+        const data = {
+            min_emps_working,
+            opens: opening_closing_times[0].hour(),
+            closes: opening_closing_times[1].hour()
+        }
+        if (props.day_hours) data._id = props.day_hours._id
+        else data.date = props.day.format()
+
+        const response = props.day_hours? await axios.put('/api/dates', data): await axios.post('/api/dates', data)
+        setLoading(false)
+        message.success({content: response.data.message, key: "date_message"})
+    }
+
+    return (
+        <Form
+        layout="vertical"
+        requiredMark
+        onFinish={onSubmit}
+        initialValues={props.day_hours ? {
+            opening_closing_times: [moment().hour(props.day_hours.opens), moment().hours(props.day_hours.closes)],
+            min_emps_working: props.day_hours.min_emps_working
+        } : { min_emps_working: 0 }}
+        >
+            <Form.Item rules={[{ required: true, message: "Please input opening and closing times"}]} label="Opening/Closing Times" name="opening_closing_times" tooltip="Required">
+                <TimePicker.RangePicker autoFocus={true} format="HH" placeholder={['Opening', 'Closing']} />
+            </Form.Item>
+            <Form.Item rules={[{ required: true, message: "Please input minimum working employees"}]} label="Minimum Employees Working" name="min_emps_working" tooltip="Required">
+                <InputNumber min={0} max={employeesState.allEmployeesLength || 0}/>
+            </Form.Item>
+            <Form.Item>
+                <Button loading={isLoading} htmlType="submit" type="primary">Submit</Button>
+            </Form.Item>
+            <Typography.Text type="secondary">Don't worry, you can edit this after you're done.</Typography.Text>
+        </Form>
     )
 }
