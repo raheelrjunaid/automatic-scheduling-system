@@ -1,0 +1,26 @@
+{
+    "name": "ass",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "frontend": "cd frontend && npm start",
+        "backend": "cd backend && nodemon server",
+        "dev": "concurrently \"npm run frontend\" \"npm run backend\""
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/raheelrjunaid/automatic-scheduling-system.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/raheelrjunaid/automatic-scheduling-system/issues"
+    },
+    "homepage": "https://github.com/raheelrjunaid/automatic-scheduling-system#readme",
+    "dependencies": {
+        "concurrently": "^7.0.0"
+    }
+}
