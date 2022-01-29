@@ -19,6 +19,8 @@ router.get("/", (req, res) => {
         })
 })
 
+// TODO: Add statement to check if date being modified exists (deletion or updating)
+
 router.get("/:date", (req, res) => {
     const db = getDB()
     db
@@ -44,6 +46,7 @@ router.post("/", (req, res) => {
         min_emps_working: body.min_emps_working
     }
 
+    // TODO make date unique to prevent duplicates
     db
         .collection("dates")
         .insertOne(newDate, (err, result) => {
@@ -83,16 +86,10 @@ router.put("/", (req, res) => {
         })
 })
 
-router.delete("/", (req, res) => {
+router.delete("/:id", (req, res) => {
     const db = getDB()
-    const body = req.body
 
-    let dateQuery
-    if (typeof(body._id) == "string") {
-        dateQuery = { _id: ObjectId(body._id)}
-    } else {
-        dateQuery = { _id: body._id }
-    }
+    let dateQuery = { _id: ObjectId(req.params.id)}
 
     db
         .collection("dates")
