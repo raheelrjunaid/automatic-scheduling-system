@@ -82,12 +82,13 @@ function Day(props) {
                 message.success({'content': response.data.message, key: 'date_data'})
                 setDateData(response.data.result)
             } catch (error) {
-                message.error({'content': error.response, key: 'date_data' })
+                console.log(error.response.data.err)
+                message.error({'content': error.response.data.message, key: 'date_data' })
             }
         }
         getDateData()
         setLoading(false)
-    }, [])
+    }, [props])
 
     return (
         <Col flex="auto" style={{
@@ -152,7 +153,23 @@ function AddHoursForm(props) {
             setSubmitState(false)
             message.success({content: response.data.message, key: "date_message"})
         } catch (error) {
-            message.error({ content: error.response.data.err, key: 'date_message' })
+            console.log(error.response.data.err)
+            message.error({ content: error.response.data.message, key: 'date_message' })
+        }
+    }
+
+    async function deleteDay() {
+        message.loading({ content: "Queuing day for deletion", key: "date_message"})
+
+        try {
+            const response = await axios.delete(`/api/dates/${dateData['_id']}`)
+            props.setDateData(null)
+            setDateData(null)
+            setSubmitState(false)
+            message.success({content: response.data.message, key: "date_message"})
+        } catch(error) {
+            console.log(error.response.data.err)
+            message.error({ content: error.response.data.message, key: 'date_message' })
         }
     }
     
@@ -174,7 +191,10 @@ function AddHoursForm(props) {
                 <InputNumber min={0} max={allEmployeesLength || 0}/>
             </Form.Item>
             <Form.Item>
-                <Button disabled={submitState ? false: true} loading={submitState === 'loading'} htmlType="submit" type="primary">Submit</Button>
+                <Space>
+                    <Button disabled={submitState ? false: true} loading={submitState === 'loading'} htmlType="submit" type="primary">Submit</Button>
+                    {dateData && <Button onClick={deleteDay} type="default" danger>Delete</Button>}
+                </Space>
             </Form.Item>
             <Typography.Text type="secondary">Don't worry, you can edit this after you're done.</Typography.Text>
         </Form>
