@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import dayjs from 'dayjs'
 import objectSupport from 'dayjs/plugin/objectSupport'
-import { Skeleton, message, Tooltip, Button, Badge, Typography, Row, Col, Form, Popover, InputNumber, TimePicker, Space } from 'antd'
+import { Popconfirm, message, Tooltip, Button, Badge, Typography, Row, Col, Form, Popover, InputNumber, TimePicker, Space, Spin } from 'antd'
 import 'antd/dist/antd.css'
 import { EditOutlined, LeftOutlined, DoubleLeftOutlined, DoubleRightOutlined, RightOutlined, PlusOutlined } from '@ant-design/icons'
 import moment from 'moment'
@@ -66,7 +66,7 @@ function Dates(props) {
             <Row justify="space-around">
                 { list_of_days.slice(0, 7).map((day) => (<Col key={day}>{day.format("ddd")}</Col>)) }
             </Row>
-            { list_of_weeks.map((week) => (<Row>{week.map((day) => (<Day currentMonth={current_month.month()} day={day} />))}</Row>)) }
+            { list_of_weeks.map((week, windx) => (<Row key={windx}>{week.map((day, dinx) => (<Day key={dinx} currentMonth={current_month.month()} day={day} />))}</Row>)) }
         </>
     )
 }
@@ -77,18 +77,23 @@ function Day(props) {
     const [isLoading, setLoading] = useState(true)
 
     useEffect(() => {
+        const controller = new AbortController()
         async function getDateData() {
             try {
-                const response = await axios.get(`/api/dates/${props.day.format()}`)
+                const response = await axios.get(`/api/dates/${props.day.format()}`, {signal: controller.signal})
                 setDateData(response.data.result)
+                setLoading(false)
                 // message.success({'content': response.data.message, key: 'date_data'})
             } catch (error) {
-                console.log(error.response.data.err)
-                message.error({'content': error.response.data.message, key: 'date_data' })
+                const errorMessage = error.message || error.response?.data.message
+                if (errorMessage !== 'canceled') { // If user didn't intentionally switch months (cancelling fetch)
+                    console.log(error?.response?.data?.err || error)
+                    message.error({'content': errorMessage, key: 'date_data' })
+                }
             }
         }
         getDateData()
-        setLoading(false)
+        return () => controller.abort()
     }, [props])
 
     return (
@@ -96,7 +101,7 @@ function Day(props) {
             borderTop: "solid 2px lightgrey",
             margin: "8px 4px"
         }}>
-            <Skeleton active loading={isLoading}>
+            <Spin spinning={isLoading}>
                 <Row justify="space-between">
                     <Col>
                         {props.day.format("D")}
@@ -123,7 +128,7 @@ function Day(props) {
                         <Badge status="success" text="Employees" />
                     </Col>
                 </Row>
-            </Skeleton>
+            </Spin>
         </Col>
     )
 }
@@ -204,7 +209,9 @@ function AddHoursForm(props) {
             <Form.Item>
                 <Space>
                     <Button disabled={submitState ? false: true} loading={submitState === 'loading'} htmlType="submit" type="primary">Submit</Button>
-                    {dateData && <Button onClick={deleteDay} type="default" danger>Delete</Button>}
+                    {dateData && <Popconfirm onConfirm={deleteDay} title="Are you sure you want to delete this day?">
+                        <Button type="default" danger>Delete</Button>
+                    </Popconfirm>}
                 </Space>
             </Form.Item>
             <Typography.Text type="secondary">Don't worry, you can edit this after you're done.</Typography.Text>
