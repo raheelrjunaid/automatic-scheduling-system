@@ -12,9 +12,9 @@ router.get("/", (req, res) => {
         .toArray((err, result) => {
             if (err) {
                 console.log(err)
-                res.status(400).send("Error getting employees");
+                res.status(400).json({"message": "Error getting employees", err});
             } else {
-                res.json(result);
+                res.json({"message": "Successfully got all employees", result});
             }
         })
 })
@@ -37,9 +37,9 @@ router.post("/", (req, res) => {
         .insertOne(newEmployee, (err, result) => {
             if (err) {
                 console.log(err)
-                res.status(400).send("Error creating employee");
+                res.status(400).json({"message": "Error creating employee", err});
             } else {
-                res.send(`Added a new match with id ${result.insertedId}`);
+                res.json({"message": `Added a new match with id ${result.insertedId}`, result});
             }
         })
 })
@@ -63,10 +63,9 @@ router.put("/", (req, res) => {
             $set: updates
         }, (err, result) => {
             if (err) {
-                console.log(err)
-                res.status(400).send(`Error updating employee`);
+                res.status(400).json({"message": "Error updating employee", err});
             } else {
-                res.send(result)
+                res.json({"message": "Successfully updated employee", result});
             }
         })
 })
@@ -87,9 +86,9 @@ router.delete("/", (req, res) => {
         .deleteOne(employeeQuery, (err, result) => {
             if (err) {
                 console.log(err)
-                res.status(400).send(`Error deleting employee`);
+                res.status(400).json({"message": "Error deleting employee", err});
             } else {
-                res.send(result)
+                res.json({"message": "Successfully deleted employee", result});
             }
         })
 })
