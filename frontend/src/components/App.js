@@ -1,16 +1,18 @@
 // import styles from './App.module.scss'
 import Calendar from './Calendar.js'
-import { Typography } from 'antd'
+import { Tabs, Typography } from 'antd'
 import 'antd/dist/antd.css'
-
-const { Title } = Typography
 
 function App() {
     return (
         <>
-            <Title>PASS</Title>
-            {/* TODO fix calendar next month on date click */}
-            <Calendar />
+            <Typography.Title style={{textAlign: 'center'}}>Raheel's Project</Typography.Title>
+            <Tabs defaultActiveKey='1' centered>
+                <Tabs.TabPane tab="Calendar" key="1">
+                    <Calendar />
+                </Tabs.TabPane>
+                <Tabs.TabPane tab="Employees" key="2"></Tabs.TabPane>
+            </Tabs>
         </>
     );
 }
