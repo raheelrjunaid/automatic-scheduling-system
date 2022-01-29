@@ -66,10 +66,11 @@ function Day(props) {
     useEffect(() => {
         async function getDateData() {
             try {
-                const date = await axios.get(`/api/dates/${props.day.format()}`)
-                setDateData(date.data.result)
+                const response = await axios.get(`/api/dates/${props.day.format()}`)
+                message.success({'content': response.data.message, key: 'date_data'})
+                setDateData(response.data.result)
             } catch (error) {
-                console.log(error)
+                message.error({'content': error.response, key: 'date_data' })
             }
         }
         getDateData()
@@ -87,7 +88,7 @@ function Day(props) {
                         {props.day.format("D")}
                     </Col>
                     <Col>{props.day.isAfter(dayjs()) && 
-                        <Popover content={<AddHoursForm dateData={dateData} setDateData={setDateData} day={props.day}/>} title={`${dateData ? "Edit" : "Add Business Hours to"} ${props.day.format("MMM D, YYYY")}`} trigger="click">
+                        <Popover placement='topLeft' content={<AddHoursForm dateData={dateData} setDateData={setDateData} day={props.day}/>} title={`${dateData ? "Edit" : "Add Business Hours to"} ${props.day.format("MMM D, YYYY")}`} trigger="click">
                             <Tooltip title={dateData ? "Edit hours" : "Add hours"}>
                                 <Button size="small" type="dashed" shape="circle" icon={dateData ? <EditOutlined/> : <PlusOutlined/>}></Button>
                             </Tooltip>
@@ -112,11 +113,16 @@ function AddHoursForm(props) {
 
     useEffect(() => {
         async function getAllEmployees() {
-            const data = await axios.get("/api/employees")
-            setEmployeesState({ allEmployeesLength: data.data.length })
+            try {
+                const response = await axios.get("/api/employees")
+                message.success({'content': response.data.message, key: 'get_all_employees'})
+                setEmployeesState({ allEmployeesLength: response.data.result.length })
+                setSubmitState(false)
+            } catch (error) {
+                message.error({'content': error.response.data.message, key: 'get_all_employees'})
+            }
         }
         getAllEmployees()
-        setSubmitState(false)
     }, [])
 
     function onValuesChange(changedValue, { min_emps_working, opening_closing_times }) {
@@ -144,8 +150,8 @@ function AddHoursForm(props) {
         try {
             const response = dateData? await axios.put('/api/dates', data): await axios.post('/api/dates', data)
             if (!dateData) data['_id'] = response.data.result.insertedId
-            props.setDateData(data)
-            setDateData(data)
+            props.setDateData(data) // Send new date data to day object to change it's state
+            setDateData(data) // Change internal state so date can be edited without refreshing
             setSubmitState(false)
             message.success({content: response.data.message, key: "date_message"})
         } catch (error) {
