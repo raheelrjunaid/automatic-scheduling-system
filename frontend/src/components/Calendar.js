@@ -12,7 +12,7 @@ dayjs.extend(objectSupport);
 async function getAllEmployees() {
     try {
         const response = await axios.get("/api/employees")
-        message.success({'content': response.data.message, key: 'get_all_employees'})
+        // message.success({'content': response.data.message, key: 'get_all_employees'})
         return response.data.result.length
     } catch (error) {
         message.error({'content': error.response.data.message, key: 'get_all_employees'})
@@ -80,8 +80,8 @@ function Day(props) {
         async function getDateData() {
             try {
                 const response = await axios.get(`/api/dates/${props.day.format()}`)
-                message.success({'content': response.data.message, key: 'date_data'})
                 setDateData(response.data.result)
+                // message.success({'content': response.data.message, key: 'date_data'})
             } catch (error) {
                 console.log(error.response.data.err)
                 message.error({'content': error.response.data.message, key: 'date_data' })
