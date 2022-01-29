@@ -9,6 +9,18 @@ import moment from 'moment'
 
 dayjs.extend(objectSupport);
 
+async function getAllEmployees() {
+    try {
+        const response = await axios.get("/api/employees")
+        message.success({'content': response.data.message, key: 'get_all_employees'})
+        return response.data.result.length
+    } catch (error) {
+        message.error({'content': error.response.data.message, key: 'get_all_employees'})
+    }
+}
+
+const allEmployeesLength = getAllEmployees()
+
 export default function Calendar() {
     const [month, setMonth] = useState(dayjs())
 
@@ -107,23 +119,8 @@ function Day(props) {
 }
 
 function AddHoursForm(props) {
-    const [employeesState, setEmployeesState] = useState({})
     const [dateData, setDateData] = useState(props.dateData)
-    const [submitState, setSubmitState] = useState('loading')
-
-    useEffect(() => {
-        async function getAllEmployees() {
-            try {
-                const response = await axios.get("/api/employees")
-                message.success({'content': response.data.message, key: 'get_all_employees'})
-                setEmployeesState({ allEmployeesLength: response.data.result.length })
-                setSubmitState(false)
-            } catch (error) {
-                message.error({'content': error.response.data.message, key: 'get_all_employees'})
-            }
-        }
-        getAllEmployees()
-    }, [])
+    const [submitState, setSubmitState] = useState(false)
 
     function onValuesChange(changedValue, { min_emps_working, opening_closing_times }) {
         if (min_emps_working !== dateData?.min_emps_working ||
@@ -174,7 +171,7 @@ function AddHoursForm(props) {
                 <TimePicker.RangePicker autoFocus={true} format="HH" placeholder={['Opening', 'Closing']} />
             </Form.Item>
             <Form.Item rules={[{ required: true, message: "Please input minimum working employees"}]} label="Minimum Employees Working" name="min_emps_working" tooltip="Required">
-                <InputNumber min={0} max={employeesState.allEmployeesLength || 0}/>
+                <InputNumber min={0} max={allEmployeesLength || 0}/>
             </Form.Item>
             <Form.Item>
                 <Button disabled={submitState ? false: true} loading={submitState === 'loading'} htmlType="submit" type="primary">Submit</Button>
