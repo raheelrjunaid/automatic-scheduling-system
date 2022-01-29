@@ -73,6 +73,7 @@ function Dates(props) {
 
 function Day(props) {
     const [dateData, setDateData] = useState(null)
+    const [formVisibility, setFormVisibility] = useState(false)
     const [isLoading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -101,7 +102,15 @@ function Day(props) {
                         {props.day.format("D")}
                     </Col>
                     <Col>{props.day.isAfter(dayjs()) && 
-                        <Popover placement='topLeft' content={<AddHoursForm dateData={dateData} setDateData={setDateData} day={props.day}/>} title={`${dateData ? "Edit" : "Add Business Hours to"} ${props.day.format("MMM D, YYYY")}`} trigger="click">
+                        <Popover
+                        visible={formVisibility}
+                        onVisibleChange={() => setFormVisibility(!formVisibility)}
+                        placement='topLeft'
+                        content={<AddHoursForm setFormVisibility={setFormVisibility}
+                        dateData={dateData} setDateData={setDateData}
+                        day={props.day}/>}
+                        title={`${dateData ? "Edit" : "Add Business Hours to"} ${props.day.format("MMM D, YYYY")}`}
+                        trigger="click">
                             <Tooltip title={dateData ? "Edit hours" : "Add hours"}>
                                 <Button size="small" type="dashed" shape="circle" icon={dateData ? <EditOutlined/> : <PlusOutlined/>}></Button>
                             </Tooltip>
@@ -151,6 +160,7 @@ function AddHoursForm(props) {
             props.setDateData(data) // Send new date data to day object to change it's state
             setDateData(data) // Change internal state so date can be edited without refreshing
             setSubmitState(false)
+            props.setFormVisibility(false)
             message.success({content: response.data.message, key: "date_message"})
         } catch (error) {
             console.log(error.response.data.err)
@@ -166,6 +176,7 @@ function AddHoursForm(props) {
             props.setDateData(null)
             setDateData(null)
             setSubmitState(false)
+            props.setFormVisibility(false)
             message.success({content: response.data.message, key: "date_message"})
         } catch(error) {
             console.log(error.response.data.err)
