@@ -1,5 +1,6 @@
 // import styles from './App.module.scss'
 import Calendar from './Calendar.js'
+import Employees from './Employees.js'
 import { Tabs, Typography } from 'antd'
 import 'antd/dist/antd.css'
 
@@ -11,7 +12,9 @@ function App() {
                 <Tabs.TabPane tab="Calendar" key="1">
                     <Calendar />
                 </Tabs.TabPane>
-                <Tabs.TabPane tab="Employees" key="2"></Tabs.TabPane>
+                <Tabs.TabPane tab="Employees" key="2">
+                    <Employees />
+                </Tabs.TabPane>
             </Tabs>
         </>
     );
