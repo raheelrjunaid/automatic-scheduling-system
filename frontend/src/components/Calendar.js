@@ -1,25 +1,15 @@
 import { useState, useEffect } from 'react'
+import { getAllEmployees } from './Employees'
 import axios from 'axios'
 import dayjs from 'dayjs'
 import objectSupport from 'dayjs/plugin/objectSupport'
-import { Popconfirm, message, Tooltip, Button, Badge, Typography, Row, Col, Form, Popover, InputNumber, TimePicker, Space, Spin } from 'antd'
-import 'antd/dist/antd.css'
-import { EditOutlined, LeftOutlined, DoubleLeftOutlined, DoubleRightOutlined, RightOutlined, PlusOutlined } from '@ant-design/icons'
+import { Tabs, Popconfirm, Input, message, Tooltip, Button, Badge, Typography, Row, Col, Form, Popover, InputNumber, TimePicker, Space, Spin } from 'antd'
+import { MinusCircleOutlined, EditOutlined, LeftOutlined, DoubleLeftOutlined, DoubleRightOutlined, RightOutlined, PlusOutlined } from '@ant-design/icons'
 import moment from 'moment'
 
 dayjs.extend(objectSupport);
 
-async function getAllEmployees() {
-    try {
-        const response = await axios.get("/api/employees")
-        // message.success({'content': response.data.message, key: 'get_all_employees'})
-        return response.data.result.length
-    } catch (error) {
-        message.error({'content': error.response.data.message, key: 'get_all_employees'})
-    }
-}
-
-const allEmployeesLength = getAllEmployees()
+const allEmployeesLength = getAllEmployees("length")
 
 export default function Calendar() {
     const [month, setMonth] = useState(dayjs())
@@ -97,9 +87,11 @@ function Day(props) {
     }, [props])
 
     return (
-        <Col flex="auto" style={{
+        <Col style={{
             borderTop: "solid 2px lightgrey",
-            margin: "8px 4px"
+            margin: "8px 4px",
+            width: "13%",
+            minHeight: "3rem",
         }}>
             <Spin spinning={isLoading}>
                 <Row justify="space-between">
@@ -111,10 +103,7 @@ function Day(props) {
                         visible={formVisibility}
                         onVisibleChange={() => setFormVisibility(!formVisibility)}
                         placement='topLeft'
-                        content={<AddHoursForm setFormVisibility={setFormVisibility}
-                        dateData={dateData} setDateData={setDateData}
-                        day={props.day}/>}
-                        title={`${dateData ? "Edit" : "Add Business Hours to"} ${props.day.format("MMM D, YYYY")}`}
+                        content={<DateEditPopover setFormVisibility={setFormVisibility} dateData={dateData} setDateData={setDateData} day={props.day}/>}
                         trigger="click">
                             <Tooltip title={dateData ? "Edit hours" : "Add hours"}>
                                 <Button size="small" type="dashed" shape="circle" icon={dateData ? <EditOutlined/> : <PlusOutlined/>}></Button>
@@ -123,13 +112,31 @@ function Day(props) {
                     }
                     </Col>
                 </Row>
-                <Row>
-                    <Col>
-                        <Badge status="success" text="Employees" />
-                    </Col>
-                </Row>
+                { props.day.isAfter(dayjs()) && 
+                    <Row>
+                        <Col>
+                            <Badge status="success" text="Employees" />
+                        </Col>
+                    </Row>
+                }
             </Spin>
         </Col>
+    )
+}
+
+function DateEditPopover(props) {
+    return (
+        <>
+            <Tabs defaultActiveKey="1" size="small" centered>
+                <Tabs.TabPane tab="Meta" key="1">
+                    <AddHoursForm setFormVisibility={props.setFormVisibility} dateData={props.dateData} setDateData={props.setDateData} day={props.day}/>
+                </Tabs.TabPane>
+                <Tabs.TabPane tab="Availability" key="2">
+                    <EmployeesForm />
+                </Tabs.TabPane>
+            </Tabs>
+            <Typography.Text type="secondary">Don't worry, you can edit this after you're done.</Typography.Text>
+        </>
     )
 }
 
@@ -214,7 +221,47 @@ function AddHoursForm(props) {
                     </Popconfirm>}
                 </Space>
             </Form.Item>
-            <Typography.Text type="secondary">Don't worry, you can edit this after you're done.</Typography.Text>
         </Form>
     )
+}
+
+function EmployeesForm() {
+
+    function onSubmit() {
+
+    }
+
+    return (
+        <Form onFinish={onSubmit}>
+            <Form.List name="employees">
+                {(fields, { add, remove }) => {
+                    return (
+                        <>
+                            {fields.map(({ key, name }) => {
+                                return (
+                                    <Space key={key}>
+                                        <Form.Item name="" rules={[{ required: true, message: 'Missing first name' }]}>
+                                            <Input placeholder="First Name" />
+                                        </Form.Item>
+                                        <MinusCircleOutlined onClick={() => remove(name)} />
+                                    </Space>
+                                )
+                            }
+                            )}
+                            <Form.Item>
+                                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                                    Add Availability
+                                </Button>
+                            </Form.Item>
+                        </>
+                    )}
+                }
+            </Form.List>
+            <Form.Item>
+                <Button type="primary" htmlType="submit">
+                    Submit
+                </Button>
+            </Form.Item>
+        </Form>
+    );
 }
