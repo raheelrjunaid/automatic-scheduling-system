@@ -37,13 +37,13 @@ router.get("/:date", (req, res) => {
 
 router.post("/", (req, res) => {
     const db = getDB()
-    const body = req.body
+    const { date, opens, closes, min_emps_working } = req.body
 
     const newDate = {
-        date: new Date(body.date).toLocaleDateString(),
-        opens: body.opens,
-        closes: body.closes,
-        min_emps_working: body.min_emps_working
+        date: new Date(date).toLocaleDateString(),
+        opens: opens,
+        closes: closes,
+        min_emps_working: min_emps_working
     }
 
     // TODO make date unique to prevent duplicates
@@ -70,7 +70,7 @@ router.put("/", (req, res) => {
         dateQuery = { _id: body._id }
     }
 
-    const { _id, ...updates } = body
+    const { _id, ...updates } = req.body
 
     db
         .collection("dates")

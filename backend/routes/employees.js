@@ -21,15 +21,14 @@ router.get("/", (req, res) => {
 
 router.post("/", (req, res) => {
     const db = getDB()
-    const body = req.body
+    const { first_name, last_name, colours, fixed_hours } = req.body
 
     const newEmployee = {
-        first_name: body.first_name,
-        last_name: body.last_name,
-        colour: body.colour,
-        availability: body.availability,
-        fixed_hours: body.fixed_hours,
-        max_working_days: body.max_working_days
+        first_name,
+        last_name,
+        colours,
+        fixed_hours,
+        availability: [],
     }
 
     db
@@ -70,16 +69,10 @@ router.put("/", (req, res) => {
         })
 })
 
-router.delete("/", (req, res) => {
+router.delete("/:id", (req, res) => {
     const db = getDB()
-    const body = req.body
 
-    let employeeQuery
-    if (typeof(body._id) == "string") {
-        employeeQuery = { _id: ObjectId(body._id)}
-    } else {
-        employeeQuery = { _id: body._id }
-    }
+    let employeeQuery = { _id: ObjectId(req.params.id)}
 
     db
         .collection("employees")
