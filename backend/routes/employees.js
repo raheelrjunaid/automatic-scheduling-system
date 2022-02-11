@@ -21,12 +21,12 @@ router.get("/", (req, res) => {
 
 router.post("/", (req, res) => {
     const db = getDB()
-    const { first_name, last_name, colours, fixed_hours } = req.body
+    const { first_name, last_name, colour, fixed_hours } = req.body
 
     const newEmployee = {
         first_name,
         last_name,
-        colours,
+        colour,
         fixed_hours,
         availability: [],
     }
