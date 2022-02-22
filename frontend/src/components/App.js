@@ -1,23 +1,26 @@
-// import styles from './App.module.scss'
-import Calendar from './Calendar.js'
-import Employees from './Employees.js'
-import { Tabs, Typography } from 'antd'
-import 'antd/dist/antd.css'
+import { Title, Header, AppShell, MantineProvider } from "@mantine/core";
+import ScheduleSection from "./schedule/Schedule";
 
 function App() {
-    return (
-        <>
-            <Typography.Title style={{textAlign: 'center'}}>Raheel's Project</Typography.Title>
-            <Tabs defaultActiveKey='1' centered>
-                <Tabs.TabPane tab="Calendar" key="1">
-                    <Calendar />
-                </Tabs.TabPane>
-                <Tabs.TabPane tab="Employees" key="2">
-                    <Employees />
-                </Tabs.TabPane>
-            </Tabs>
-        </>
-    );
+  return (
+    <MantineProvider
+      theme={{ colorScheme: "dark" }}
+      withGlobalStyles
+      withNormalizeCSS
+    >
+      <AppShell
+        header={
+          <Header padding="lg">
+            <Title order={3} align="center">
+              React Scheduling System
+            </Title>
+          </Header>
+        }
+      >
+        <ScheduleSection />
+      </AppShell>
+    </MantineProvider>
+  );
 }
 
 export default App;
