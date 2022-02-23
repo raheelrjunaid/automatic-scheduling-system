@@ -11,10 +11,12 @@ import {
   LoadingOverlay,
 } from "@mantine/core";
 import dayjs from "dayjs";
-import { HiPlus } from "react-icons/hi";
+import { HiPencil, HiPlus, HiUserAdd } from "react-icons/hi";
+import EmployeeAvailability from "./popovers/EmployeeAvailability";
 
 export default function Day({ day }) {
-  const [opened, setOpened] = useState(false);
+  const [dayPopoverOpened, setDayPopoverOpened] = useState(false);
+  const [employeePopoverOpened, setEmployeePopoverOpened] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const [dateData, setDateData] = useState({
@@ -66,6 +68,19 @@ export default function Day({ day }) {
     }
   }
 
+  async function handleEmployeeAvailabilitySubmit(values) {
+    try {
+      const response = await axios.put(`/api/dates/${dateData._id}`, {
+        availability: values,
+      });
+
+      console.log(response);
+      // setDateData(data); // Change internal state so date can be edited without refreshing
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   return (
     <Box
       sx={{
@@ -79,13 +94,15 @@ export default function Day({ day }) {
         {dayjs(day).isAfter(dayjs()) && (
           <Group spacing={0}>
             <Popover
-              opened={opened}
-              onClose={() => setOpened(false)}
+              opened={dayPopoverOpened}
+              onClose={() => setDayPopoverOpened(false)}
               title="Edit date"
               withCloseButton
               target={
-                <ActionIcon onClick={() => setOpened(!opened)}>
-                  <HiPlus />
+                <ActionIcon
+                  onClick={() => setDayPopoverOpened(!dayPopoverOpened)}
+                >
+                  {dateData?._id ? <HiPencil /> : <HiPlus />}
                 </ActionIcon>
               }
             >
@@ -94,14 +111,32 @@ export default function Day({ day }) {
                 handleSubmit={handleDayHoursSubmit}
               />
             </Popover>
+
+            {dateData?._id && (
+              <Popover
+                opened={employeePopoverOpened}
+                onClose={() => setEmployeePopoverOpened(false)}
+                title="Edit date"
+                withCloseButton
+                target={
+                  <ActionIcon
+                    onClick={() =>
+                      setEmployeePopoverOpened(!employeePopoverOpened)
+                    }
+                  >
+                    <HiUserAdd />
+                  </ActionIcon>
+                }
+              >
+                <EmployeeAvailability
+                  dateData={dateData}
+                  handleSubmit={handleEmployeeAvailabilitySubmit}
+                />
+              </Popover>
+            )}
           </Group>
         )}
       </Group>
     </Box>
   );
 }
-
-// function AddHoursForm(props) {
-//   const [dateData, setDateData] = useState(props.dateData);
-//   const [submitState, setSubmitState] = useState(false);
-// }

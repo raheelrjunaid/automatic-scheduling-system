@@ -60,11 +60,17 @@ router.post("/", (req, res) => {
 
 router.put("/:id", (req, res) => {
   const db = getDB();
-  const body = req.body;
 
   const dateQuery = { _id: ObjectId(req.params.id) };
 
   const { _id, ...updates } = req.body;
+  updates.availability = updates?.availability?.map(
+    ({ employee_id, start, end }) => ({
+      employee_id: ObjectId(employee_id),
+      start: new Date(start),
+      end: new Date(end),
+    })
+  );
 
   db.collection("dates").updateOne(
     dateQuery,

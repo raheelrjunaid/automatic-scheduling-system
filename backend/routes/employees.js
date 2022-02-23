@@ -28,7 +28,6 @@ router.post("/", (req, res) => {
         last_name,
         colour,
         fixed_hours,
-        availability: [],
     }
 
     db

@@ -6,12 +6,6 @@ import { Button, Group, NumberInput, Space } from "@mantine/core";
 import dayjs from "dayjs";
 
 export default function DayHoursForm({ dateData, handleSubmit }) {
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    console.log(dateData);
-  }, [dateData]);
-
   const form = useForm({
     initialValues: {
       opens: dayjs(dateData.date).hour(dateData.opens).toDate?.(),
@@ -44,9 +38,7 @@ export default function DayHoursForm({ dateData, handleSubmit }) {
           required
           {...form.getInputProps("min_emps_working")}
         />
-        <Button type="submit" loading={loading}>
-          Submit
-        </Button>
+        <Button type="submit">Submit</Button>
       </Group>
     </form>
   );
