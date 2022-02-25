@@ -1,6 +1,5 @@
 import { Group, Button, ActionIcon, Select } from "@mantine/core";
 import { TimeInput } from "@mantine/dates";
-import { useForm } from "@mantine/hooks";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { HiMinus } from "react-icons/hi";
@@ -22,26 +21,29 @@ export default function EmployeeAvailability({ dateData, handleSubmit }) {
         console.log(error);
       }
     }
+
     async function getAvailablities() {
       try {
         const response = await axios.get(`/api/dates/${dateData.date}`, {
           signal: controller.signal,
         });
-        console.log(response);
-        const initalAvailability =
-          response.data.result?.availability.map(({ start, end, ...rest }) => {
-            return {
-              start: dayjs(start).toDate(),
-              end: dayjs(end).toDate(),
-              ...rest,
-            };
-          }) || [];
-        console.log(initalAvailability);
+
+        const initalAvailability = response.data.result.availability
+          ? response.data.result.availability.map(({ start, end, ...rest }) => {
+              return {
+                start: dayjs(start).toDate(),
+                end: dayjs(end).toDate(),
+                ...rest,
+              };
+            })
+          : [];
+
         setEmployeesAvailable(initalAvailability);
       } catch (error) {
         console.log(error);
       }
     }
+
     getAvailablities();
     getEmployees();
 
@@ -60,6 +62,8 @@ export default function EmployeeAvailability({ dateData, handleSubmit }) {
     setEmployeesAvailable(updatedEmployeesAvailable);
   }
 
+  // FIXME When removing last employee availability, popover exits
+
   return (
     <Group direction="column">
       <Button
@@ -76,42 +80,41 @@ export default function EmployeeAvailability({ dateData, handleSubmit }) {
       >
         Add
       </Button>
-      {employeesAvailable.map(({ employee_id, start, end }, index) => {
-        // const employee = allEmployees.find(({ _id }) => _id === employee_id)
-        return (
-          <Group>
-            <Select
-              label="Employee"
-              placeholder="Employee"
-              required
-              data={allEmployees.map(({ _id, name }) => {
-                const first_name = name.split(" ")[0];
-                return {
-                  label: first_name[0].toUpperCase() + first_name.substr(1),
-                  value: _id,
-                };
-              })}
-              value={employee_id}
-              onChange={(value) => handleChange(index, "employee_id", value)}
-            />
-            <TimeInput
-              label="Start"
-              required
-              value={start}
-              onChange={(value) => handleChange(index, "start", value)}
-            />
-            <TimeInput
-              label="End"
-              required
-              value={end}
-              onChange={(value) => handleChange(index, "end", value)}
-            />
-            <ActionIcon onClick={() => deleteAvailability(index)}>
-              <HiMinus />
-            </ActionIcon>
-          </Group>
-        );
-      })}
+
+      {employeesAvailable.map(({ employee_id, start, end }, index) => (
+        <Group key={index}>
+          <Select
+            label="Employee"
+            placeholder="Employee"
+            required
+            data={allEmployees.map(({ _id, name }) => {
+              const first_name = name.split(" ")[0];
+              return {
+                label: first_name[0].toUpperCase() + first_name.substr(1),
+                value: _id,
+              };
+            })}
+            value={employee_id}
+            onChange={(value) => handleChange(index, "employee_id", value)}
+          />
+          <TimeInput
+            label="Start"
+            required
+            value={start}
+            onChange={(value) => handleChange(index, "start", value)}
+          />
+          <TimeInput
+            label="End"
+            required
+            value={end}
+            onChange={(value) => handleChange(index, "end", value)}
+          />
+          <ActionIcon onClick={() => deleteAvailability(index)}>
+            <HiMinus />
+          </ActionIcon>
+        </Group>
+      ))}
+
       <Button onClick={() => handleSubmit(employeesAvailable)}>
         Save Changes
       </Button>
