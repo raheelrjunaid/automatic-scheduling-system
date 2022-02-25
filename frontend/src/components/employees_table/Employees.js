@@ -1,158 +1,102 @@
-import { useState, useEffect } from 'react'
-import { Modal, Button, Spin, Select, Switch, Form, Input, Table, Tag, message, Space } from 'antd'
-import { PlusOutlined, CloseOutlined, CheckOutlined } from '@ant-design/icons'
-import axios from 'axios'
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { Button, Group, Modal, Table, Title } from "@mantine/core";
+import EmployeeForm from "./EmployeeForm";
 
-export async function getAllEmployees(param=null) {
-    try {
-        const response = await axios.get("/api/employees")
-        return param === "length" ? response.data.result.length : response.data.result
-    } catch (error) {
-        console.error(error)
-    }
-}
+export default function EmployeesSection() {
+  const [employees, setEmployees] = useState([]);
+  const [employeeEditing, setEmployeeEditing] = useState(null);
+  const [modalVisibility, setModalVisibility] = useState(false);
 
-export default function Employees() {
-    const [employees, setEmployees] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [formLoading, setFormLoading] = useState(false);
-    const [employeeEditing, setEmployeeEditing] = useState(null);
-    const [modalVisibility, setModalVisibility] = useState(false);
-    const [form] = Form.useForm();
-
+  useEffect(() => {
+    const controller = new AbortController();
     async function setAllEmployees() {
-        setLoading(true)
-        const data = await getAllEmployees()
-        setEmployees(data.map((employee) => {
-            return {
-                key: employee._id,
-                first_name: employee.first_name,
-                last_name: employee.last_name,
-                fixed_hours: employee.fixed_hours,
-                colour: employee.colour
-            }
-        }))
-        setLoading(false)
+      const response = await axios("/api/employees", {
+        signal: controller.signal,
+      });
+      setEmployees(response.data.result);
     }
 
-    useEffect(() => {
-        const controller = new AbortController()
-        setAllEmployees()
-        return () => controller.abort()
-    }, [])
+    setAllEmployees();
+    return () => controller.abort();
+  }, []);
 
-    function toggleModal(record) {
-        setModalVisibility(!modalVisibility)
-        if (modalVisibility) {
-            setEmployeeEditing(null)
-        }
-        else if(record) {
-            setEmployeeEditing(record)
-            form.setFieldsValue(record)
-        }
-        else {
-            form.resetFields()
-            form.setFieldsValue({ colour: colours[0] })
-        }
+  async function handleSubmit(values) {
+    try {
+      const response = employeeEditing
+        ? await axios.put(`/api/employees/${employeeEditing._id}`, values)
+        : await axios.post("/api/employees", values);
+      console.log(response);
+    } catch (error) {
+      console.log(error);
     }
+  }
 
-    async function deleteEmployee(record) {
-        try {
-            await axios.delete(`/api/employees/${record.key}`)
-            setAllEmployees()
-        } catch (error) {
-            error.errorFields.forEach(({errors}) => {
-                message.error(errors)
-            })
-        }
+  function toggleModal(employee) {
+    if (employee) {
+      setEmployeeEditing(employee);
+    } else {
+      setEmployeeEditing(null);
     }
+    setModalVisibility(!modalVisibility);
+  }
 
-    async function handleSubmit() {
-        try {
-            setFormLoading(true)
-            const data = await form.validateFields()
-            if (!data.fixed_hours) data.fixed_hours = false
-            if(employeeEditing) data._id = employeeEditing.key
-
-            employeeEditing ? await axios.put('/api/employees', data) : await axios.post('/api/employees', data)
-            setAllEmployees()
-            setFormLoading(false)
-            toggleModal()
-        } catch (error) {
-            console.error(error)
-        }
+  async function deleteEmployee({ _id }) {
+    try {
+      const response = await axios.delete(`/api/employees/${_id}`);
+      console.log(response);
+    } catch (error) {
+      console.log(error);
     }
+  }
 
-    const columns = [
-        {
-            title: 'First Name',
-            dataIndex: 'first_name',
-            key: 'first_name',
-        },
-        {
-            title: 'Last Name',
-            dataIndex: 'last_name',
-            key: 'last_name',
-        },
-        {
-            title: 'Colours',
-            dataIndex: 'colour',
-            key: 'colour',
-            render: colour => <Tag color={colour}>{colour}</Tag>
-        },
-        {
-            title: 'Fixed Hours',
-            dataIndex: 'fixed_hours',
-            key: 'fixed_hours',
-            render: fixed_hours => fixed_hours ? <CheckOutlined /> : <CloseOutlined />
-        },
-        {
-            title: 'Operate',
-            dataIndex: 'operate',
-            key: 'operate',
-            render: (this_field, record) => (
-                <>
-                    <Space>
-                        <Button type="default" onClick={() => toggleModal(record)}>Edit</Button>
-                        <Button danger type="default" onClick={() => deleteEmployee(record)}>Delete</Button>
-                    </Space>
-                </>
-            )
-        }
-    ]
+  return (
+    <section>
+      <Title order={1} align="center">
+        Employees
+      </Title>
 
-    const colours = ["magenta", "red", "volcano", "orange", "gold", "lime", "green", "cyan", "blue", "geekblue", "purple"]
+      <Table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Colour</th>
+            <th>Job Type</th>
+            <th>Operation</th>
+          </tr>
+        </thead>
+        <tbody>
+          {employees.map((employee, index) => (
+            <tr key={index}>
+              <td>{employee.name}</td>
+              <td>{employee.role}</td>
+              <td>{employee.colour}</td>
+              <td>{employee.full_time ? "Full Time" : "Part Time"}</td>
+              <td>
+                <Group>
+                  <Button onClick={() => toggleModal(employee)}>Edit</Button>
+                  <Button onClick={() => deleteEmployee(employee)}>
+                    Delete
+                  </Button>
+                </Group>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
 
-    return (
-        <>
-            <Spin spinning={loading}>
-                <Table pagination={false} dataSource={employees} columns={columns} />
-                <Button icon={<PlusOutlined />} type="primary" block onClick={() => toggleModal()}>Add New Employee</Button>
-            </Spin>
-            <Modal title="Edit employees" visible={modalVisibility} onCancel={() => toggleModal()} footer={[
-                <Button type="default" onClick={() => toggleModal()}>Cancel</Button>,
-                <Button type="primary" loading={formLoading} onClick={handleSubmit}>Submit</Button>,
-            ]}>
-                <Form form={form}>
-                    <Form.Item name="first_name" label="First Name" rules={[{ required: true }]}>
-                        <Input placeholder="First Name"/>
-                    </Form.Item>
-                    <Form.Item name="last_name" label="Last Name" rules={[{ required: true }]}>
-                        <Input placeholder="Last Name"/>
-                    </Form.Item>
-                    <Form.Item name="fixed_hours" label="Fixed Hours" valuePropName="checked">
-                        <Switch />
-                    </Form.Item>
-                    <Form.Item name="colour" label="Colour">
-                        <Select style={{ width: 120 }}>
-                            { colours.map((colour, indx) => (
-                                <Select.Option key={indx} value={colour}><Tag color={colour}>{colour}</Tag></Select.Option>
-                            ))
-                            }
-                        </Select>
-                    </Form.Item>
-                </Form>
-            </Modal>
-        </>
-    )
+      <Button onClick={() => toggleModal()}>Add New Employee</Button>
+      <Modal
+        title="Edit employees"
+        opened={modalVisibility}
+        onClose={() => toggleModal()}
+      >
+        <EmployeeForm
+          handleSubmit={handleSubmit}
+          employeeData={employeeEditing}
+        />
+      </Modal>
+    </section>
+  );
 }

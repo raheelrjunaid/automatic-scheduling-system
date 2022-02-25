@@ -1,4 +1,5 @@
 import { Title, Header, AppShell, MantineProvider } from "@mantine/core";
+import EmployeesSection from "./employees_table/Employees";
 import ScheduleSection from "./schedule/Schedule";
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
         }
       >
         <ScheduleSection />
+        <EmployeesSection />
       </AppShell>
     </MantineProvider>
   );
