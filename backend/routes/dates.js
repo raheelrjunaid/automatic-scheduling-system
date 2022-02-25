@@ -45,6 +45,7 @@ router.post("/", (req, res) => {
     closes: closes,
     min_emps_working: min_emps_working,
     availability: [],
+    emps_working: [],
   };
 
   // TODO make date unique to prevent duplicates
@@ -64,7 +65,14 @@ router.put("/:id", (req, res) => {
   const dateQuery = { _id: ObjectId(req.params.id) };
 
   const { _id, ...updates } = req.body;
-  updates.availability = updates?.availability?.map(
+  updates.availability = updates.availability?.map(
+    ({ employee_id, start, end }) => ({
+      employee_id: ObjectId(employee_id),
+      start: new Date(start),
+      end: new Date(end),
+    })
+  );
+  updates.emps_working = updates.emps_working?.map(
     ({ employee_id, start, end }) => ({
       employee_id: ObjectId(employee_id),
       start: new Date(start),
