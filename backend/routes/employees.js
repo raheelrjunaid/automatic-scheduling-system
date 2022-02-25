@@ -1,88 +1,82 @@
-import express from 'express'
-import { ObjectId } from 'mongodb'
-import { getDB } from '../db/conn.js'
+import express from "express";
+import { ObjectId } from "mongodb";
+import { getDB } from "../db/conn.js";
 
-const router = express.Router()
+const router = express.Router();
 
 router.get("/", (req, res) => {
-    const db = getDB()
-    db
-        .collection("employees")
-        .find()
-        .toArray((err, result) => {
-            if (err) {
-                console.log(err)
-                res.status(400).json({"message": "Error getting employees", err});
-            } else {
-                res.json({"message": "Successfully got all employees", result});
-            }
-        })
-})
+  const db = getDB();
+  db.collection("employees")
+    .find()
+    .toArray((err, result) => {
+      if (err) {
+        console.log(err);
+        res.status(400).json({ message: "Error getting employees", err });
+      } else {
+        res.json({ message: "Successfully got all employees", result });
+      }
+    });
+});
 
 router.post("/", (req, res) => {
-    const db = getDB()
-    const { first_name, last_name, colour, fixed_hours } = req.body
+  const db = getDB();
+  const { name, role, colour, full_time } = req.body;
 
-    const newEmployee = {
-        first_name,
-        last_name,
-        colour,
-        fixed_hours,
-    }
+  const newEmployee = {
+    name,
+    role,
+    colour,
+    full_time,
+  };
 
-    db
-        .collection("employees")
-        .insertOne(newEmployee, (err, result) => {
-            if (err) {
-                console.log(err)
-                res.status(400).json({"message": "Error creating employee", err});
-            } else {
-                res.json({"message": `Added a new match with id ${result.insertedId}`, result});
-            }
-        })
-})
-
-router.put("/", (req, res) => {
-    const db = getDB()
-    const body = req.body
-
-    let employeeQuery
-    if (typeof(body._id) == "string") {
-        employeeQuery = { _id: ObjectId(body._id)}
+  db.collection("employees").insertOne(newEmployee, (err, result) => {
+    if (err) {
+      console.log(err);
+      res.status(400).json({ message: "Error creating employee", err });
     } else {
-        employeeQuery = { _id: body._id }
+      res.json({
+        message: `Added a new match with id ${result.insertedId}`,
+        result,
+      });
     }
+  });
+});
 
-    const { _id, ...updates } = body
+router.put("/:id", (req, res) => {
+  const db = getDB();
 
-    db
-        .collection("employees")
-        .updateOne(employeeQuery, {
-            $set: updates
-        }, (err, result) => {
-            if (err) {
-                res.status(400).json({"message": "Error updating employee", err});
-            } else {
-                res.json({"message": "Successfully updated employee", result});
-            }
-        })
-})
+  const employeeQuery = { _id: ObjectId(req.params.id) };
+
+  const { _id, ...updates } = req.body;
+
+  db.collection("employees").updateOne(
+    employeeQuery,
+    {
+      $set: updates,
+    },
+    (err, result) => {
+      if (err) {
+        res.status(400).json({ message: "Error updating employee", err });
+      } else {
+        res.json({ message: "Successfully updated employee", result });
+      }
+    }
+  );
+});
 
 router.delete("/:id", (req, res) => {
-    const db = getDB()
+  const db = getDB();
 
-    let employeeQuery = { _id: ObjectId(req.params.id)}
+  let employeeQuery = { _id: ObjectId(req.params.id) };
 
-    db
-        .collection("employees")
-        .deleteOne(employeeQuery, (err, result) => {
-            if (err) {
-                console.log(err)
-                res.status(400).json({"message": "Error deleting employee", err});
-            } else {
-                res.json({"message": "Successfully deleted employee", result});
-            }
-        })
-})
+  db.collection("employees").deleteOne(employeeQuery, (err, result) => {
+    if (err) {
+      console.log(err);
+      res.status(400).json({ message: "Error deleting employee", err });
+    } else {
+      res.json({ message: "Successfully deleted employee", result });
+    }
+  });
+});
 
-export default router
+export default router;
