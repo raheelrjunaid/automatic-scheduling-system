@@ -17,21 +17,22 @@ import EmployeeAvailability from "./popovers/EmployeeAvailability";
 export default function Day({ day }) {
   const [dayPopoverOpened, setDayPopoverOpened] = useState(false);
   const [employeePopoverOpened, setEmployeePopoverOpened] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState();
 
-  const [dateData, setDateData] = useState({
-    date: dayjs(day).format(),
-  });
+  const [dateData, setDateData] = useState({});
   const theme = useMantineTheme();
 
   useEffect(() => {
     const controller = new AbortController();
     async function getDateData() {
       try {
-        const response = await axios.get(`/api/dates/${dateData.date}`, {
+        setLoading(true);
+        const response = await axios.get(`/api/dates/${dayjs(day).format()}`, {
           signal: controller.signal,
         });
-        if (response.data.result) setDateData(response.data.result);
+        response.data.result
+          ? setDateData(response.data.result)
+          : setDateData({ date: new Date(day) });
         setLoading(false);
       } catch (error) {
         if (error.message !== "canceled") console.log(error);
@@ -96,7 +97,7 @@ export default function Day({ day }) {
             <Popover
               opened={dayPopoverOpened}
               onClose={() => setDayPopoverOpened(false)}
-              title="Edit date"
+              title={`Edit date ${dayjs(day).format("D/M/YYYY")}`}
               withCloseButton
               target={
                 <ActionIcon
@@ -116,7 +117,7 @@ export default function Day({ day }) {
               <Popover
                 opened={employeePopoverOpened}
                 onClose={() => setEmployeePopoverOpened(false)}
-                title="Edit date"
+                title="Edit employee availability"
                 withCloseButton
                 target={
                   <ActionIcon
