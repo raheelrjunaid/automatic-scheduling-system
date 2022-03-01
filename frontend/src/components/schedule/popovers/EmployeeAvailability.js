@@ -4,41 +4,51 @@ import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { HiMinus } from "react-icons/hi";
 import axios from "axios";
+import {
+  addDoc,
+  deleteDoc,
+  doc,
+  endAt,
+  getDoc,
+  getDocs,
+  query,
+  setDoc,
+  Timestamp,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import { db, employeesRef, availabilitiesRef } from "../../..";
 
-export default function EmployeeAvailability({ dateData, handleSubmit }) {
-  const [allEmployees, setAllEmployees] = useState([]);
-  const [employeesAvailable, setEmployeesAvailable] = useState([]);
+export default function EmployeeAvailability({ dateData }) {
+  const [employees, setEmployees] = useState([]);
+  const [availabilities, setAvailabilities] = useState([]);
 
   useEffect(() => {
-    const controller = new AbortController();
+    // Set all employees for selection in form
     async function getEmployees() {
       try {
-        const response = await axios.get("/api/employees", {
-          signal: controller.signal,
-        });
-        setAllEmployees(response.data.result);
+        const result = await getDocs(employeesRef);
+        setEmployees(result.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
       } catch (error) {
         console.log(error);
       }
     }
 
+    // Get initial availabilities for employees
+    // Used for populating list of employee availability for each day
     async function getAvailablities() {
       try {
-        const response = await axios.get(`/api/dates/${dateData.date}`, {
-          signal: controller.signal,
-        });
+        const queryRef = query(
+          availabilitiesRef,
+          where("date", "==", dateData.date)
+        );
+        const result = await getDocs(queryRef);
 
-        const initalAvailability = response.data.result.availability
-          ? response.data.result.availability.map(({ start, end, ...rest }) => {
-              return {
-                start: dayjs(start).toDate(),
-                end: dayjs(end).toDate(),
-                ...rest,
-              };
-            })
-          : [];
-
-        setEmployeesAvailable(initalAvailability);
+        if (result.docs.length > 0) {
+          setAvailabilities(
+            result.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+          );
+        }
       } catch (error) {
         console.log(error);
       }
@@ -46,20 +56,39 @@ export default function EmployeeAvailability({ dateData, handleSubmit }) {
 
     getAvailablities();
     getEmployees();
-
-    return () => controller.abort();
   }, [dateData.date]);
 
+  // TODO Delete availabilities on click
   function deleteAvailability(index) {
-    const updatedEmployeesAvailable = [...employeesAvailable];
+    // If employee has been created in firestore
+    if (availabilities[index].id) {
+      const docRef = doc(db, "availabilities", availabilities[index].id);
+      deleteDoc(docRef);
+    }
+    const updatedEmployeesAvailable = [...availabilities];
     updatedEmployeesAvailable.splice(index, 1);
-    setEmployeesAvailable(updatedEmployeesAvailable);
+    setAvailabilities(updatedEmployeesAvailable);
   }
 
   function handleChange(index, field, value) {
-    const updatedEmployeesAvailable = [...employeesAvailable];
+    const updatedEmployeesAvailable = [...availabilities];
     updatedEmployeesAvailable[index][field] = value;
-    setEmployeesAvailable(updatedEmployeesAvailable);
+    setAvailabilities(updatedEmployeesAvailable);
+  }
+
+  function handleSubmit() {
+    availabilities.forEach((availability) => {
+      const { id, ...data } = availability;
+      if (id) {
+        const docRef = doc(db, `availabilities`, id);
+        updateDoc(docRef, data);
+      } else {
+        addDoc(availabilitiesRef, {
+          ...data,
+          date: Timestamp.fromDate(dateData.date),
+        });
+      }
+    });
   }
 
   // FIXME When removing last employee availability, popover exits
@@ -68,12 +97,12 @@ export default function EmployeeAvailability({ dateData, handleSubmit }) {
     <Group direction="column">
       <Button
         onClick={() =>
-          setEmployeesAvailable([
-            ...employeesAvailable,
+          setAvailabilities([
+            ...availabilities,
             {
-              employee_id: null,
-              start: new Date(dateData.date),
-              end: new Date(dateData.date),
+              employeeId: "",
+              start: Timestamp.fromDate(dateData.date),
+              end: Timestamp.fromDate(dateData.date),
             },
           ])
         }
@@ -81,33 +110,46 @@ export default function EmployeeAvailability({ dateData, handleSubmit }) {
         Add
       </Button>
 
-      {employeesAvailable.map(({ employee_id, start, end }, index) => (
+      {availabilities.map(({ employeeId, start, end, id }, index) => (
         <Group key={index}>
           <Select
             label="Employee"
             placeholder="Employee"
             required
-            data={allEmployees.map(({ _id, name }) => {
-              const first_name = name.split(" ")[0];
-              return {
-                label: first_name[0].toUpperCase() + first_name.substr(1),
-                value: _id,
-              };
-            })}
-            value={employee_id}
-            onChange={(value) => handleChange(index, "employee_id", value)}
+            data={employees.map(({ id, name }) => ({
+              label: name,
+              value: id,
+            }))}
+            value={employeeId}
+            onChange={(value) => handleChange(index, "employeeId", value)}
           />
           <TimeInput
             label="Start"
             required
-            value={start}
-            onChange={(value) => handleChange(index, "start", value)}
+            value={start?.toDate()}
+            onChange={(value) =>
+              handleChange(
+                index,
+                "start",
+                Timestamp.fromDate(
+                  dayjs(dateData.date).hour(value.getHours()).toDate()
+                )
+              )
+            }
           />
           <TimeInput
             label="End"
             required
-            value={end}
-            onChange={(value) => handleChange(index, "end", value)}
+            value={end?.toDate()}
+            onChange={(value) =>
+              handleChange(
+                index,
+                "end",
+                Timestamp.fromDate(
+                  dayjs(dateData.date).hour(value.getHours()).toDate()
+                )
+              )
+            }
           />
           <ActionIcon onClick={() => deleteAvailability(index)}>
             <HiMinus />
@@ -115,9 +157,7 @@ export default function EmployeeAvailability({ dateData, handleSubmit }) {
         </Group>
       ))}
 
-      <Button onClick={() => handleSubmit(employeesAvailable)}>
-        Save Changes
-      </Button>
+      <Button onClick={handleSubmit}>Save Changes</Button>
     </Group>
   );
 }

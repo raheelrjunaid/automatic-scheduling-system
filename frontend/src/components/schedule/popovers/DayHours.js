@@ -8,9 +8,8 @@ import dayjs from "dayjs";
 export default function DayHoursForm({ dateData, handleSubmit }) {
   const form = useForm({
     initialValues: {
-      opens: dayjs(dateData.date).hour(dateData.opens).toDate?.(),
-      closes: dayjs(dateData.date).hour(dateData.closes).toDate?.(),
-      min_emps_working: dateData?.min_emps_working,
+      opens: dateData.opens?.toDate(),
+      closes: dateData.closes?.toDate(),
     },
   });
 
@@ -31,13 +30,6 @@ export default function DayHoursForm({ dateData, handleSubmit }) {
             {...form.getInputProps("closes")}
           />
         </Group>
-
-        <NumberInput
-          label="Minimum Employees Working"
-          min={0}
-          required
-          {...form.getInputProps("min_emps_working")}
-        />
         <Button type="submit">Submit</Button>
       </Group>
     </form>

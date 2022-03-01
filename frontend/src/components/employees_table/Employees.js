@@ -2,6 +2,14 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { Button, Group, Modal, Table, Title } from "@mantine/core";
 import EmployeeForm from "./EmployeeForm";
+import {
+  addDoc,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  updateDoc,
+} from "firebase/firestore";
+import { db, employeesRef } from "../..";
 
 export default function EmployeesSection() {
   const [employees, setEmployees] = useState([]);
@@ -9,27 +17,27 @@ export default function EmployeesSection() {
   const [modalVisibility, setModalVisibility] = useState(false);
 
   useEffect(() => {
-    const controller = new AbortController();
-    async function setAllEmployees() {
-      const response = await axios("/api/employees", {
-        signal: controller.signal,
-      });
-      setEmployees(response.data.result);
-    }
-
-    setAllEmployees();
-    return () => controller.abort();
+    const employeeUnsub = onSnapshot(employeesRef, (snapshot) => {
+      setEmployees(snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    });
+    return () => employeeUnsub();
   }, []);
 
   async function handleSubmit(values) {
     try {
-      const response = employeeEditing
-        ? await axios.put(`/api/employees/${employeeEditing._id}`, values)
-        : await axios.post("/api/employees", values);
-      console.log(response);
+      if (!values.id) {
+        addDoc(employeesRef, values);
+        console.log("Added employee");
+      } else {
+        const docRef = doc(db, "employees", values.id);
+        const { id, ...updatedValues } = values;
+        updateDoc(docRef, updatedValues);
+        console.log("Updated employee");
+      }
     } catch (error) {
       console.log(error);
     }
+    setModalVisibility(false);
   }
 
   function toggleModal(employee) {
@@ -41,10 +49,11 @@ export default function EmployeesSection() {
     setModalVisibility(!modalVisibility);
   }
 
-  async function deleteEmployee({ _id }) {
+  async function deleteEmployee({ id }) {
     try {
-      const response = await axios.delete(`/api/employees/${_id}`);
-      console.log(response);
+      const docRef = doc(db, "employees", id);
+      deleteDoc(docRef);
+      console.log("Deleted employee");
     } catch (error) {
       console.log(error);
     }
