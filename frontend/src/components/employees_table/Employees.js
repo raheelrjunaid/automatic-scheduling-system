@@ -10,6 +10,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db, employeesRef } from "../..";
+import EmployeeAvailability from "../schedule/popovers/EmployeeAvailability";
 
 export default function EmployeesSection() {
   const [employees, setEmployees] = useState([]);
@@ -40,13 +41,13 @@ export default function EmployeesSection() {
     setModalVisibility(false);
   }
 
-  function toggleModal(employee) {
+  function toggleModal(modal, employee) {
     if (employee) {
       setEmployeeEditing(employee);
     } else {
       setEmployeeEditing(null);
     }
-    setModalVisibility(!modalVisibility);
+    setModalVisibility(modal || !modalVisibility);
   }
 
   async function deleteEmployee({ id }) {
@@ -84,7 +85,12 @@ export default function EmployeesSection() {
               <td>{employee.full_time ? "Full Time" : "Part Time"}</td>
               <td>
                 <Group>
-                  <Button onClick={() => toggleModal(employee)}>Edit</Button>
+                  <Button onClick={() => toggleModal("edit", employee)}>
+                    Edit
+                  </Button>
+                  <Button onClick={() => toggleModal("availability", employee)}>
+                    Availability
+                  </Button>
                   <Button onClick={() => deleteEmployee(employee)}>
                     Delete
                   </Button>
@@ -97,14 +103,22 @@ export default function EmployeesSection() {
 
       <Button onClick={() => toggleModal()}>Add New Employee</Button>
       <Modal
-        title="Edit employees"
-        opened={modalVisibility}
+        title="Edit Employee Data"
+        opened={modalVisibility === "edit"}
         onClose={() => toggleModal()}
       >
         <EmployeeForm
           handleSubmit={handleSubmit}
           employeeData={employeeEditing}
         />
+      </Modal>
+      <Modal
+        title="Edit Employee Availability"
+        opened={modalVisibility === "availability"}
+        overflow="inside"
+        onClose={() => toggleModal()}
+      >
+        <EmployeeAvailability employeeData={employeeEditing} />
       </Modal>
     </section>
   );

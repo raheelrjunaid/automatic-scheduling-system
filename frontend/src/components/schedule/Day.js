@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import DayHoursForm from "./popovers/DayHours";
-import axios from "axios";
 import {
   useMantineTheme,
   Text,
@@ -13,19 +12,8 @@ import {
 import dayjs from "dayjs";
 import { HiPencil, HiPlus, HiUserAdd } from "react-icons/hi";
 import EmployeeAvailability from "./popovers/EmployeeAvailability";
-import {
-  doc,
-  addDoc,
-  getDocs,
-  onSnapshot,
-  query,
-  where,
-  updateDoc,
-  getDoc,
-  Timestamp,
-  setDoc,
-} from "firebase/firestore";
-import { datesRef, db } from "../..";
+import { doc, getDoc, Timestamp, setDoc } from "firebase/firestore";
+import { db } from "../..";
 
 export default function Day({ day }) {
   const [dayPopoverOpened, setDayPopoverOpened] = useState(false);
@@ -80,8 +68,8 @@ export default function Day({ day }) {
       <LoadingOverlay visible={loading} />
       <Group position="apart">
         <Text>{day.getDate()}</Text>
-
         <Group spacing={0}>
+          {/* 
           <Popover
             opened={dayPopoverOpened}
             onClose={() => setDayPopoverOpened(false)}
@@ -119,7 +107,7 @@ export default function Day({ day }) {
             >
               <EmployeeAvailability dateData={dateData} />
             </Popover>
-          )}
+          )} */}
         </Group>
       </Group>
     </Box>

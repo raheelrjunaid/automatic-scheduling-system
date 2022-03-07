@@ -1,9 +1,7 @@
 import { useForm } from "@mantine/hooks";
-import { useEffect, useState } from "react";
-import { HiOutlineClock, HiPlus, HiUserAdd } from "react-icons/hi";
+import { HiOutlineClock } from "react-icons/hi";
 import { TimeInput } from "@mantine/dates";
-import { Button, Group, NumberInput, Space } from "@mantine/core";
-import dayjs from "dayjs";
+import { Button, Group } from "@mantine/core";
 
 export default function DayHoursForm({ dateData, handleSubmit }) {
   const form = useForm({
